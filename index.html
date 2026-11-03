@@ -17,18 +17,20 @@
 <body>
   <div class="chargement" role="status">
     <p class="visuellement-cache">Chargement du portfolio</p>
-    <div class="chargement__eclat" aria-hidden="true"></div>
     <div class="chargement__scene" aria-hidden="true">
       <div class="chargement__feu">
         <div class="chargement__lueur"></div>
-        <img class="chargement__icone chargement__icone--eteint" src="assets/images/nav/feu-eteint.svg" alt="" width="24" height="28">
-        <img class="chargement__icone chargement__icone--allume" src="assets/images/nav/feu-allume.svg" alt="" width="24" height="28">
+        <canvas class="chargement__canvas" width="64" height="72"></canvas>
         <span class="chargement__etincelle"></span>
       </div>
       <div class="chargement__barre">
-        <span class="chargement__remplissage"></span>
+        <span class="chargement__ornement chargement__ornement--gauche"></span>
+        <span class="chargement__jauge"><span class="chargement__remplissage"></span></span>
+        <span class="chargement__ornement chargement__ornement--droite"></span>
       </div>
+      <p class="chargement__texte">Chargement<span class="chargement__point">.</span><span class="chargement__point">.</span><span class="chargement__point">.</span></p>
     </div>
+    <div class="chargement__eclat" aria-hidden="true"></div>
   </div>
 
   <a class="lien-evitement" href="#contenu">Aller au contenu</a>
@@ -149,6 +151,7 @@
 
   <script src="assets/js/vendor/gsap.min.js" defer></script>
   <script src="assets/js/vendor/ScrollTrigger.min.js" defer></script>
+  <script src="assets/js/feu.js" defer></script>
   <script src="assets/js/main.js" defer></script>
 </body>
 </html>

@@ -20,30 +20,49 @@ const REGLAGES = {
 };
 
 const CHARGEMENT = {
-  dureeMinimale: 2.8,
-  delaiChute: 0.4,
+  dureeMinimale: 3.2,
+  delaiChute: 1.2,
   dureeChute: 0.9,
-  hauteurChute: 0.55,
-  pointImpact: 0.45,
-  dureeAllumage: 0.5,
+  hauteurChute: 0.6,
+  pointImpact: 0.74,
+  opaciteLueur: 0.75,
+  dureeApparitionLueur: 0.8,
   dureeRemplissage: 0.4,
-  dureeEmbrasement: 0.9,
-  agrandissementLueur: 5,
-  dureeRetour: 1.4,
+  dureeEmbrasement: 1,
+  agrandissementLueur: 3,
+  agrandissementFinal: 16,
+  dureeEclat: 0.7,
+  dureeRetour: 1.8,
   dureeFonduSimple: 0.4
+};
+
+const ENTREE_HERO = {
+  zoomDepart: 1.14,
+  dureeZoom: 2.6,
+  decalageTexte: 28,
+  dureeTexte: 1,
+  ecartTexte: 0.14,
+  delaiTexte: 0.6,
+  decalageMenu: 40,
+  dureeMenu: 0.8,
+  ecartMenu: 0.08,
+  delaiMenu: 0.9,
+  delaiEntete: 1.2
 };
 
 const SELECTEURS = {
   chargement: ".chargement",
   chargementFeu: ".chargement__feu",
-  chargementEteint: ".chargement__icone--eteint",
-  chargementAllume: ".chargement__icone--allume",
+  chargementCanvas: ".chargement__canvas",
   chargementLueur: ".chargement__lueur",
   chargementEtincelle: ".chargement__etincelle",
   chargementRemplissage: ".chargement__remplissage",
   chargementScene: ".chargement__scene",
   chargementEclat: ".chargement__eclat",
   hero: ".hero",
+  heroScene: ".hero__scene",
+  heroTextes: ".hero__ligne, .hero__accroche, .hero__dispo",
+  entete: ".entete",
   calque: ".hero__calque--",
   halo: ".hero__halo",
   braises: ".hero__braises",
@@ -221,6 +240,13 @@ function terminerChargement(ecran) {
   ScrollTrigger.refresh();
 }
 
+function revelerHero() {
+  gsap.fromTo(SELECTEURS.heroScene, { scale: ENTREE_HERO.zoomDepart }, { scale: 1, duration: ENTREE_HERO.dureeZoom, ease: "power3.out" });
+  gsap.from(SELECTEURS.heroTextes, { autoAlpha: 0, y: ENTREE_HERO.decalageTexte, duration: ENTREE_HERO.dureeTexte, stagger: ENTREE_HERO.ecartTexte, delay: ENTREE_HERO.delaiTexte, ease: "power3.out" });
+  gsap.from(SELECTEURS.lienMenuTitre, { autoAlpha: 0, x: ENTREE_HERO.decalageMenu, duration: ENTREE_HERO.dureeMenu, stagger: ENTREE_HERO.ecartMenu, delay: ENTREE_HERO.delaiMenu, ease: "power3.out" });
+  gsap.from(SELECTEURS.entete, { autoAlpha: 0, duration: ENTREE_HERO.dureeMenu, delay: ENTREE_HERO.delaiEntete });
+}
+
 function lancerChargement() {
   const ecran = document.querySelector(SELECTEURS.chargement);
   if (!ecran) {
@@ -229,8 +255,17 @@ function lancerChargement() {
   const mouvement = window.matchMedia(MEDIAS.mouvement).matches;
   const remplissage = document.querySelector(SELECTEURS.chargementRemplissage);
   const feu = document.querySelector(SELECTEURS.chargementFeu);
+  const canvas = document.querySelector(SELECTEURS.chargementCanvas);
   const minuteur = { progression: 0 };
   let progressionReelle = 0;
+
+  if (mouvement) {
+    feuChargement.demarrer(canvas);
+  } else {
+    feuChargement.contexte = canvas.getContext("2d");
+    feuChargement.mode = "allume";
+    feuChargement.dessiner();
+  }
 
   const afficherProgression = () => {
     gsap.set(remplissage, { scaleX: Math.min(minuteur.progression, progressionReelle) });
@@ -240,23 +275,29 @@ function lancerChargement() {
     .set(SELECTEURS.chargementEtincelle, { y: () => -window.innerHeight * CHARGEMENT.hauteurChute, opacity: 1 }, CHARGEMENT.delaiChute)
     .to(SELECTEURS.chargementEtincelle, { y: () => feu.offsetHeight * CHARGEMENT.pointImpact, duration: CHARGEMENT.dureeChute, ease: "power2.in" })
     .set(SELECTEURS.chargementEtincelle, { opacity: 0 })
-    .to(SELECTEURS.chargementEteint, { opacity: 0, duration: CHARGEMENT.dureeAllumage * 0.4 })
-    .fromTo(SELECTEURS.chargementAllume, { opacity: 0, scale: 0.7, transformOrigin: "50% 100%" }, { opacity: 1, scale: 1, duration: CHARGEMENT.dureeAllumage, ease: "back.out(3)" }, "<")
-    .to(SELECTEURS.chargementLueur, { opacity: 0.7, duration: CHARGEMENT.dureeAllumage * 2, ease: "power2.out" }, "<")
+    .add(() => feuChargement.allumer())
+    .to(SELECTEURS.chargementLueur, { opacity: CHARGEMENT.opaciteLueur, duration: CHARGEMENT.dureeApparitionLueur, ease: "power2.out" })
     .add(() => {
-      gsap.to(SELECTEURS.chargementAllume, { scaleY: () => gsap.utils.random(0.94, 1.06), duration: () => gsap.utils.random(0.08, 0.2), repeat: -1, repeatRefresh: true, transformOrigin: "50% 100%" });
+      gsap.to(SELECTEURS.chargementLueur, { scale: () => gsap.utils.random(0.94, 1.06), opacity: () => gsap.utils.random(0.6, 0.85), duration: () => gsap.utils.random(0.1, 0.25), repeat: -1, repeatRefresh: true, ease: "sine.inOut" });
     });
 
   const fin = () => {
     if (!mouvement) {
-      gsap.to(ecran, { autoAlpha: 0, duration: CHARGEMENT.dureeFonduSimple, onComplete: () => terminerChargement(ecran) });
+      gsap.to(ecran, { autoAlpha: 0, duration: CHARGEMENT.dureeFonduSimple, onComplete: () => { feuChargement.arreter(); terminerChargement(ecran); } });
       return;
     }
+    gsap.killTweensOf(SELECTEURS.chargementLueur);
+    feuChargement.embraser(CHARGEMENT.dureeEmbrasement);
     gsap.timeline({ onComplete: () => terminerChargement(ecran) })
       .to(SELECTEURS.chargementLueur, { scale: CHARGEMENT.agrandissementLueur, opacity: 1, duration: CHARGEMENT.dureeEmbrasement, ease: "power2.in" })
-      .to(SELECTEURS.chargementEclat, { opacity: 1, duration: CHARGEMENT.dureeEmbrasement * 0.7, ease: "power2.in" }, "<0.3")
-      .set([SELECTEURS.chargementScene], { autoAlpha: 0 })
+      .to(SELECTEURS.chargementLueur, { scale: CHARGEMENT.agrandissementFinal, duration: CHARGEMENT.dureeEclat, ease: "power2.in" })
+      .to(SELECTEURS.chargementEclat, { opacity: 1, duration: CHARGEMENT.dureeEclat, ease: "power2.in" }, "<")
+      .set(SELECTEURS.chargementScene, { autoAlpha: 0 })
       .set(ecran, { backgroundColor: "transparent" })
+      .add(() => {
+        feuChargement.arreter();
+        revelerHero();
+      })
       .to(SELECTEURS.chargementEclat, { opacity: 0, duration: CHARGEMENT.dureeRetour, ease: "power2.out" });
   };
 
