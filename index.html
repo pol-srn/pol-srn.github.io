@@ -12,9 +12,25 @@
   <link rel="preload" href="assets/fonts/unifrakturmaguntia-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/schibsted-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="assets/css/style.css">
-  <script>document.documentElement.className = "js";</script>
+  <script>document.documentElement.className = "js chargement-actif";</script>
 </head>
 <body>
+  <div class="chargement" role="status">
+    <p class="visuellement-cache">Chargement du portfolio</p>
+    <div class="chargement__eclat" aria-hidden="true"></div>
+    <div class="chargement__scene" aria-hidden="true">
+      <div class="chargement__feu">
+        <div class="chargement__lueur"></div>
+        <img class="chargement__icone chargement__icone--eteint" src="assets/images/nav/feu-eteint.svg" alt="" width="24" height="28">
+        <img class="chargement__icone chargement__icone--allume" src="assets/images/nav/feu-allume.svg" alt="" width="24" height="28">
+        <span class="chargement__etincelle"></span>
+      </div>
+      <div class="chargement__barre">
+        <span class="chargement__remplissage"></span>
+      </div>
+    </div>
+  </div>
+
   <a class="lien-evitement" href="#contenu">Aller au contenu</a>
 
   <header class="entete">

@@ -19,7 +19,30 @@ const REGLAGES = {
   }
 };
 
+const CHARGEMENT = {
+  dureeMinimale: 2.8,
+  delaiChute: 0.4,
+  dureeChute: 0.9,
+  hauteurChute: 0.55,
+  pointImpact: 0.45,
+  dureeAllumage: 0.5,
+  dureeRemplissage: 0.4,
+  dureeEmbrasement: 0.9,
+  agrandissementLueur: 5,
+  dureeRetour: 1.4,
+  dureeFonduSimple: 0.4
+};
+
 const SELECTEURS = {
+  chargement: ".chargement",
+  chargementFeu: ".chargement__feu",
+  chargementEteint: ".chargement__icone--eteint",
+  chargementAllume: ".chargement__icone--allume",
+  chargementLueur: ".chargement__lueur",
+  chargementEtincelle: ".chargement__etincelle",
+  chargementRemplissage: ".chargement__remplissage",
+  chargementScene: ".chargement__scene",
+  chargementEclat: ".chargement__eclat",
   hero: ".hero",
   calque: ".hero__calque--",
   halo: ".hero__halo",
@@ -40,6 +63,7 @@ const SELECTEURS = {
 };
 
 const CLASSES = {
+  chargementActif: "chargement-actif",
   lienActif: "chemin__lien--actif",
   etapeParcourue: "chemin__etape--parcourue",
   cheminReplie: "chemin--replie",
@@ -168,6 +192,87 @@ function replierMenu(avecMouvement) {
     onLeaveBack: () => (avecMouvement ? repli.reverse() : repli.progress(0))
   });
 }
+
+function suivreChargement(surProgression) {
+  const images = [...document.images];
+  const total = images.length + 1;
+  let charges = 0;
+  const avancer = () => {
+    charges++;
+    surProgression(charges / total);
+  };
+  const attentes = images.map((image) => {
+    if (image.complete) {
+      avancer();
+      return Promise.resolve();
+    }
+    return new Promise((fin) => {
+      image.addEventListener("load", () => { avancer(); fin(); }, { once: true });
+      image.addEventListener("error", () => { avancer(); fin(); }, { once: true });
+    });
+  });
+  attentes.push(document.fonts.ready.then(avancer));
+  return Promise.all(attentes);
+}
+
+function terminerChargement(ecran) {
+  ecran.remove();
+  document.documentElement.classList.remove(CLASSES.chargementActif);
+  ScrollTrigger.refresh();
+}
+
+function lancerChargement() {
+  const ecran = document.querySelector(SELECTEURS.chargement);
+  if (!ecran) {
+    return;
+  }
+  const mouvement = window.matchMedia(MEDIAS.mouvement).matches;
+  const remplissage = document.querySelector(SELECTEURS.chargementRemplissage);
+  const feu = document.querySelector(SELECTEURS.chargementFeu);
+  const minuteur = { progression: 0 };
+  let progressionReelle = 0;
+
+  const afficherProgression = () => {
+    gsap.set(remplissage, { scaleX: Math.min(minuteur.progression, progressionReelle) });
+  };
+
+  const allumage = gsap.timeline({ paused: !mouvement })
+    .set(SELECTEURS.chargementEtincelle, { y: () => -window.innerHeight * CHARGEMENT.hauteurChute, opacity: 1 }, CHARGEMENT.delaiChute)
+    .to(SELECTEURS.chargementEtincelle, { y: () => feu.offsetHeight * CHARGEMENT.pointImpact, duration: CHARGEMENT.dureeChute, ease: "power2.in" })
+    .set(SELECTEURS.chargementEtincelle, { opacity: 0 })
+    .to(SELECTEURS.chargementEteint, { opacity: 0, duration: CHARGEMENT.dureeAllumage * 0.4 })
+    .fromTo(SELECTEURS.chargementAllume, { opacity: 0, scale: 0.7, transformOrigin: "50% 100%" }, { opacity: 1, scale: 1, duration: CHARGEMENT.dureeAllumage, ease: "back.out(3)" }, "<")
+    .to(SELECTEURS.chargementLueur, { opacity: 0.7, duration: CHARGEMENT.dureeAllumage * 2, ease: "power2.out" }, "<")
+    .add(() => {
+      gsap.to(SELECTEURS.chargementAllume, { scaleY: () => gsap.utils.random(0.94, 1.06), duration: () => gsap.utils.random(0.08, 0.2), repeat: -1, repeatRefresh: true, transformOrigin: "50% 100%" });
+    });
+
+  const fin = () => {
+    if (!mouvement) {
+      gsap.to(ecran, { autoAlpha: 0, duration: CHARGEMENT.dureeFonduSimple, onComplete: () => terminerChargement(ecran) });
+      return;
+    }
+    gsap.timeline({ onComplete: () => terminerChargement(ecran) })
+      .to(SELECTEURS.chargementLueur, { scale: CHARGEMENT.agrandissementLueur, opacity: 1, duration: CHARGEMENT.dureeEmbrasement, ease: "power2.in" })
+      .to(SELECTEURS.chargementEclat, { opacity: 1, duration: CHARGEMENT.dureeEmbrasement * 0.7, ease: "power2.in" }, "<0.3")
+      .set([SELECTEURS.chargementScene], { autoAlpha: 0 })
+      .set(ecran, { backgroundColor: "transparent" })
+      .to(SELECTEURS.chargementEclat, { opacity: 0, duration: CHARGEMENT.dureeRetour, ease: "power2.out" });
+  };
+
+  const attenteTemps = gsap.to(minuteur, { progression: 1, duration: mouvement ? CHARGEMENT.dureeMinimale : 0, ease: "power1.inOut", onUpdate: afficherProgression }).then();
+  const attenteFichiers = suivreChargement((valeur) => {
+    progressionReelle = valeur;
+    afficherProgression();
+  });
+  const attenteAllumage = mouvement ? allumage.then() : Promise.resolve();
+
+  Promise.all([attenteTemps, attenteFichiers, attenteAllumage]).then(() => {
+    gsap.to(remplissage, { scaleX: 1, duration: CHARGEMENT.dureeRemplissage, ease: "power1.out", overwrite: true, onComplete: fin });
+  });
+}
+
+lancerChargement();
 
 const medias = gsap.matchMedia();
 

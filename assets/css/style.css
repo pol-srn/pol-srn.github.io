@@ -34,6 +34,7 @@
   --couleur-nuit: 4 7 14;
   --couleur-braise: 240 160 64;
   --couleur-etincelle: #ffd98a;
+  --couleur-noir: #04070e;
 
   --police-titre: "UnifrakturMaguntia", "Old English Text MT", serif;
   --police-texte: "Schibsted Grotesk", system-ui, sans-serif;
@@ -60,6 +61,11 @@
   --hauteur-feu: 1.75rem;
   --largeur-feu: 1.5rem;
   --hauteur-barre-mobile: 4.5rem;
+
+  --largeur-feu-chargement: 7.5rem;
+  --hauteur-feu-chargement: 8.75rem;
+  --largeur-barre-chargement: min(18rem, 60vw);
+  --taille-etincelle-chargement: 0.5rem;
 
   --ratio-scene: 1440 / 904;
   --hauteur-hero-min: 36rem;
@@ -106,6 +112,104 @@ img {
   html {
     scroll-behavior: smooth;
   }
+}
+
+.chargement-actif {
+  overflow: hidden;
+}
+
+.visuellement-cache {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  clip-path: inset(50%);
+}
+
+.chargement {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: var(--couleur-noir);
+}
+
+.js .chargement {
+  display: grid;
+  place-items: center;
+}
+
+.chargement__eclat {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 50%, rgb(255 214 150 / 0.95) 0%, rgb(var(--couleur-braise) / 0.85) 35%, rgb(200 80 30 / 0.6) 70%, rgb(120 40 20 / 0.4) 100%);
+  opacity: 0;
+}
+
+.chargement__scene {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--espace-l);
+  position: relative;
+}
+
+.chargement__feu {
+  position: relative;
+  width: var(--largeur-feu-chargement);
+  height: var(--hauteur-feu-chargement);
+}
+
+.chargement__lueur {
+  position: absolute;
+  top: 70%;
+  left: 50%;
+  width: 22rem;
+  height: 22rem;
+  background: radial-gradient(circle, rgb(var(--couleur-braise) / 0.55) 0%, rgb(242 115 38 / 0.18) 40%, rgb(242 115 38 / 0) 70%);
+  opacity: 0;
+  transform: translate(-50%, -50%);
+}
+
+.chargement__icone {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+}
+
+.chargement__icone--allume {
+  opacity: 0;
+}
+
+.chargement__etincelle {
+  position: absolute;
+  top: 0;
+  left: calc(50% - var(--taille-etincelle-chargement) / 2);
+  width: var(--taille-etincelle-chargement);
+  height: var(--taille-etincelle-chargement);
+  background: var(--couleur-etincelle);
+  box-shadow: 0 0 10px 3px rgb(var(--couleur-braise) / 0.9);
+  opacity: 0;
+}
+
+.chargement__barre {
+  width: var(--largeur-barre-chargement);
+  height: 0.875rem;
+  padding: 2px;
+  border: 2px solid var(--couleur-filet);
+}
+
+.chargement__remplissage {
+  display: block;
+  height: 100%;
+  background: var(--couleur-accent);
+  transform: scaleX(0);
+  transform-origin: left center;
 }
 
 .lien-evitement {
