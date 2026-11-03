@@ -1,0 +1,6 @@
+# Références d'ambiance : images tierces, à ne pas publier
+moodboard/
+
+# Fichiers système
+.DS_Store
+Thumbs.db
