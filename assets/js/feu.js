@@ -6,20 +6,21 @@ const REGLAGES_FEU = {
     baseY: 92,
     cendreRayon: 26,
     cendreHauteur: 8,
-    hauteurFlamme: 46,
-    demiLargeur: 17,
-    langues: [
-      { decalage: 0, hauteur: 1, largeur: 1, phase: 0 },
-      { decalage: -7, hauteur: 0.68, largeur: 0.7, phase: 1.9 },
-      { decalage: 7, hauteur: 0.74, largeur: 0.7, phase: 3.7 }
+    baseFlamme: 87,
+    hauteurFlamme: 44,
+    demiLargeur: 15,
+    lobes: [
+      { decalage: 0, hauteur: 1, largeur: 0.72 },
+      { decalage: -9, hauteur: 0.74, largeur: 0.55 },
+      { decalage: 9, hauteur: 0.82, largeur: 0.55 },
+      { decalage: -15, hauteur: 0.44, largeur: 0.42 },
+      { decalage: 15, hauteur: 0.4, largeur: 0.42 }
     ],
-    balancement: 2.6,
-    vitesse: 2.4,
-    epee: { sommet: 12, inclinaison: 0.06, largeurLame: 3 },
+    mouvement: { ondulation: 4.2, montee: 16, decoupe: 1.3, frequence: 0.22, contraste: 2.3 },
+    epee: { sommet: 34, inclinaison: 0 },
     os: [[24, 90, 15, 84], [62, 91, 72, 86], [30, 93, 40, 89]],
     crane: [58, 86],
-    palette: ["#5a1c14", "#9a3a1e", "#d0642a", "#f0a040", "#ffd27a", "#fff0c8"],
-    braises: 0.15,
+    braises: 0.2,
     fumeeEteint: 0.7,
     fumeeAllume: 0.15,
     etincellesAllumage: 26
@@ -28,32 +29,29 @@ const REGLAGES_FEU = {
     largeur: 120,
     hauteur: 206,
     centreX: 60,
-    baseY: 196,
-    cendreRayon: 40,
-    cendreHauteur: 12,
-    hauteurFlamme: 74,
-    demiLargeur: 26,
-    langues: [
-      { decalage: 0, hauteur: 1, largeur: 0.9, phase: 0 },
-      { decalage: -11, hauteur: 0.78, largeur: 0.7, phase: 1.3 },
-      { decalage: 11, hauteur: 0.82, largeur: 0.7, phase: 2.6 },
-      { decalage: -19, hauteur: 0.5, largeur: 0.5, phase: 4.1 },
-      { decalage: 19, hauteur: 0.46, largeur: 0.5, phase: 5.2 }
-    ],
-    balancement: 3.4,
-    vitesse: 3.1,
-    epee: { sommet: 10, inclinaison: 0.065, largeurLame: 4 },
-    os: [[30, 194, 16, 184], [86, 195, 104, 188], [44, 198, 58, 192], [76, 199, 66, 191]],
-    crane: [92, 187],
-    palette: ["#4e1610", "#8e2a18", "#c8481e", "#ea7a2c", "#ffb84a", "#ffe6a8"],
-    braises: 0.35,
+    baseY: 172,
+    hauteurFlamme: 92,
+    demiLargeur: 40,
+    calques: { arriere: 0, flamme: 1, avant: 2 },
+    mouvement: { ondulation: 4.2, montee: 22, decoupe: 1.1, frequence: 0.16, contraste: 1 },
+    braises: 0.45,
     fumeeEteint: 0.5,
-    fumeeAllume: 0.12,
+    fumeeAllume: 0.1,
     etincellesAllumage: 30
   }
 };
 
-const IMAGES_PAR_SECONDE_FEU = 12;
+const IMAGES_PAR_SECONDE_FEU = 15;
+
+const PALETTE_FLAMME = [
+  [0.1, "#8a0c06"],
+  [0.22, "#c01408"],
+  [0.33, "#e03214"],
+  [0.46, "#f0601e"],
+  [0.58, "#f8862c"],
+  [0.72, "#fcb444"],
+  [0.88, "#ffe48c"]
+];
 
 const COULEURS_FEU = {
   fumee: ["#6e7e90", "#4e5e72", "#36424f"],
@@ -61,25 +59,38 @@ const COULEURS_FEU = {
   cendreChaude: ["#4a3028", "#6a4030"],
   os: ["#d8ccb2", "#a89c84", "#6e6454"],
   orbite: "#16100e",
-  epeeSombre: "#2a1610",
-  epeeMoyen: "#5a3420",
-  epeeClair: "#8e5a36",
-  epeeReflet: "#c87a44",
-  epeeBraise: "#e0602a",
+  acierSombre: "#1e232c",
+  acierMoyen: "#4c5562",
+  acierClair: "#8e98a6",
+  acierReflet: "#c9d0d8",
+  poignee: "#2a1c16",
+  acierChaud: "#c0502a",
   etincelle: ["#fff1c0", "#ffd24a", "#e0602a"]
 };
 
 function creerFeu(canvas, reglages) {
   const contexte = canvas.getContext("2d");
+  const { largeur: L, hauteur: H } = reglages;
+  const baseFlamme = reglages.baseFlamme ?? reglages.baseY;
+  const tampon = document.createElement("canvas");
+  tampon.width = L;
+  tampon.height = H;
+  const contexteTampon = tampon.getContext("2d");
+  const imageFlamme = contexteTampon.createImageData(L, H);
+  const palette = PALETTE_FLAMME.map(([seuil, couleur]) => [seuil, parseInt(couleur.slice(1, 3), 16), parseInt(couleur.slice(3, 5), 16), parseInt(couleur.slice(5, 7), 16)]);
   const etat = {
     actif: false,
+    pret: !reglages.calques,
     mode: "eteint",
     allumage: 0,
     intensite: 1,
     image: 0,
     derniere: 0,
     fumees: [],
-    etincelles: []
+    etincelles: [],
+    champ: new Float32Array(L * H),
+    cadre: { x0: 0, x1: L - 1, y0: 0, y1: H - 1 },
+    sprite: null
   };
 
   const hachage = (a, b) => {
@@ -88,9 +99,122 @@ function creerFeu(canvas, reglages) {
     return ((n ^ (n >>> 16)) >>> 0) / 4294967296;
   };
 
+  const bruit = (x, y) => {
+    const xi = Math.floor(x);
+    const yi = Math.floor(y);
+    const fx = x - xi;
+    const fy = y - yi;
+    const sx = fx * fx * (3 - 2 * fx);
+    const sy = fy * fy * (3 - 2 * fy);
+    const a = hachage(xi, yi);
+    const b = hachage(xi + 1, yi);
+    const c = hachage(xi, yi + 1);
+    const d = hachage(xi + 1, yi + 1);
+    return a + (b - a) * sx + (c - a) * sy + (a - b - c + d) * sx * sy;
+  };
+
   const pixel = (x, y, couleur) => {
     contexte.fillStyle = couleur;
     contexte.fillRect(Math.round(x), Math.round(y), 1, 1);
+  };
+
+  const lisser = (champ) => {
+    const copie = new Float32Array(champ.length);
+    for (let y = 0; y < H; y++) {
+      for (let x = 0; x < L; x++) {
+        let somme = 0;
+        let nombre = 0;
+        for (let dy = -1; dy <= 1; dy++) {
+          for (let dx = -1; dx <= 1; dx++) {
+            const nx = x + dx;
+            const ny = y + dy;
+            if (nx >= 0 && ny >= 0 && nx < L && ny < H) {
+              somme += champ[ny * L + nx];
+              nombre++;
+            }
+          }
+        }
+        copie[y * L + x] = somme / nombre;
+      }
+    }
+    return copie;
+  };
+
+  const encadrer = () => {
+    let x0 = L;
+    let x1 = 0;
+    let y0 = H;
+    let y1 = 0;
+    etat.champ.forEach((valeur, i) => {
+      if (valeur > 0.02) {
+        const x = i % L;
+        const y = Math.floor(i / L);
+        x0 = Math.min(x0, x);
+        x1 = Math.max(x1, x);
+        y0 = Math.min(y0, y);
+        y1 = Math.max(y1, y);
+      }
+    });
+    const marge = Math.ceil(reglages.mouvement.ondulation) + 3;
+    etat.cadre = { x0: Math.max(0, x0 - marge), x1: Math.min(L - 1, x1 + marge), y0: Math.max(0, y0 - Math.round(reglages.hauteurFlamme * 0.5)), y1: Math.min(H - 1, y1 + 2) };
+  };
+
+  const construireChampLobes = () => {
+    reglages.lobes.forEach((lobe) => {
+      const haut = reglages.hauteurFlamme * lobe.hauteur;
+      for (let y = 0; y < H; y++) {
+        const v = (baseFlamme - y) / haut;
+        if (v < 0 || v > 1) {
+          continue;
+        }
+        const centre = reglages.centreX + lobe.decalage * (1 - v * 0.45);
+        const demi = reglages.demiLargeur * lobe.largeur * Math.pow(1 - v, 0.65) * (v < 0.12 ? 0.75 + v * 2 : 1);
+        for (let x = 0; x < L; x++) {
+          const u = Math.abs(x - centre) / Math.max(demi, 0.5);
+          if (u > 1) {
+            continue;
+          }
+          const valeur = Math.pow(1 - u, 1.1) * Math.pow(1 - v, 1.1) * 0.95 * Math.sqrt(lobe.hauteur);
+          const i = y * L + x;
+          etat.champ[i] = Math.max(etat.champ[i], valeur);
+        }
+      }
+    });
+    etat.champ = lisser(lisser(etat.champ));
+    encadrer();
+  };
+
+  const construireChampImage = (image) => {
+    const lecture = document.createElement("canvas");
+    lecture.width = L;
+    lecture.height = H;
+    const contexteLecture = lecture.getContext("2d");
+    contexteLecture.drawImage(image, reglages.calques.flamme * L, 0, L, H, 0, 0, L, H);
+    const { data } = contexteLecture.getImageData(0, 0, L, H);
+    for (let i = 0; i < L * H; i++) {
+      if (data[i * 4 + 3] < 128) {
+        continue;
+      }
+      const luminance = 0.3 * data[i * 4] + 0.59 * data[i * 4 + 1] + 0.11 * data[i * 4 + 2];
+      etat.champ[i] = 0.15 + 0.85 * Math.min(1, Math.max(0, (luminance - 50) / 190));
+    }
+    const lisse = lisser(etat.champ);
+    etat.champ = etat.champ.map((valeur, i) => Math.max(lisse[i], valeur * 0.85));
+    encadrer();
+  };
+
+  const echantillonner = (x, y) => {
+    if (x < 0 || y < 0 || x >= L - 1 || y >= H - 1) {
+      return 0;
+    }
+    const xi = Math.floor(x);
+    const yi = Math.floor(y);
+    const fx = x - xi;
+    const fy = y - yi;
+    const i = yi * L + xi;
+    const haut = etat.champ[i] + (etat.champ[i + 1] - etat.champ[i]) * fx;
+    const bas = etat.champ[i + L] + (etat.champ[i + L + 1] - etat.champ[i + L]) * fx;
+    return haut + (bas - haut) * fy;
   };
 
   const hauteurFlamme = () => {
@@ -110,20 +234,20 @@ function creerFeu(canvas, reglages) {
     return 0.9 + ((t - 0.6) / 0.4) * 0.1;
   };
 
+  const sommetFoyer = () => reglages.baseY - (reglages.cendreHauteur || 0);
+
   const ajouterFumee = (x, y) => {
     etat.fumees.push({ x, y, vx: (Math.random() - 0.5) * 0.3, vy: -0.4 - Math.random() * 0.35, age: 0, vie: 28 + Math.random() * 18, phase: Math.random() * 6 });
   };
-
-  const sommetCendre = () => reglages.baseY - reglages.cendreHauteur;
 
   const mettreAJour = () => {
     const hauteur = hauteurFlamme();
     const taux = etat.mode === "eteint" ? reglages.fumeeEteint : reglages.fumeeAllume;
     if (Math.random() < taux) {
-      ajouterFumee(reglages.centreX + (Math.random() - 0.5) * 6, sommetCendre() - 2 - reglages.hauteurFlamme * hauteur * 0.9);
+      ajouterFumee(reglages.centreX + (Math.random() - 0.5) * 6, sommetFoyer() - 2 - reglages.hauteurFlamme * Math.max(hauteur, 0.15) * 0.9);
     }
     if (etat.mode !== "eteint" && Math.random() < reglages.braises * hauteur) {
-      etat.etincelles.push({ x: reglages.centreX + (Math.random() - 0.5) * reglages.demiLargeur, y: sommetCendre() - 6, vx: (Math.random() - 0.5) * 0.5, vy: -0.8 - Math.random() * 0.8, age: 0, vie: 20 + Math.random() * 18, flottante: true });
+      etat.etincelles.push({ x: reglages.centreX + (Math.random() - 0.5) * reglages.demiLargeur, y: sommetFoyer() - reglages.hauteurFlamme * 0.3, vx: (Math.random() - 0.5) * 0.5, vy: -0.7 - Math.random() * 0.8, age: 0, vie: 22 + Math.random() * 22, flottante: true, phase: Math.random() * 6 });
     }
     etat.fumees.forEach((p) => {
       p.age++;
@@ -132,7 +256,7 @@ function creerFeu(canvas, reglages) {
     });
     etat.etincelles.forEach((p) => {
       p.age++;
-      p.x += p.vx + (p.flottante ? Math.sin(p.age * 0.45) * 0.3 : 0);
+      p.x += p.vx + (p.flottante ? Math.sin(p.age * 0.35 + p.phase) * 0.35 : 0);
       p.y += p.vy;
       p.vy += p.flottante ? 0 : 0.14;
     });
@@ -182,41 +306,30 @@ function creerFeu(canvas, reglages) {
     }));
   };
 
-  const axeEpee = (y) => reglages.centreX + (reglages.baseY - y) * reglages.epee.inclinaison;
-
   const dessinerEpee = (hauteur) => {
-    const { sommet, largeurLame } = reglages.epee;
+    const { sommet, inclinaison } = reglages.epee;
     const bas = reglages.baseY - 3;
-    const ax = (y) => Math.round(axeEpee(y));
-    for (let a = 0; a < 16; a++) {
-      const angle = (a / 16) * Math.PI * 2;
-      pixel(ax(sommet + 2) + Math.cos(angle) * 2.2, sommet + 2 + Math.sin(angle) * 2.2, a < 6 ? COULEURS_FEU.epeeClair : COULEURS_FEU.epeeMoyen);
+    const ax = (y) => Math.round(reglages.centreX + (reglages.baseY - y) * inclinaison);
+    const anneau = [[0, -2], [1, -2], [-1, -1], [2, -1], [-1, 0], [2, 0], [0, 1], [1, 1]];
+    anneau.forEach(([dx, dy], i) => pixel(ax(sommet) + dx, sommet + dy, i < 3 ? COULEURS_FEU.acierClair : COULEURS_FEU.acierMoyen));
+    const garde = sommet + 8;
+    for (let y = sommet + 2; y < garde; y++) {
+      pixel(ax(y), y, y % 2 === 0 ? COULEURS_FEU.poignee : COULEURS_FEU.acierSombre);
+      pixel(ax(y) + 1, y, COULEURS_FEU.acierSombre);
     }
-    const debutPoignee = sommet + 5;
-    const garde = debutPoignee + 9;
-    for (let y = debutPoignee; y < garde; y++) {
-      pixel(ax(y), y, y % 2 === 0 ? COULEURS_FEU.epeeMoyen : COULEURS_FEU.epeeSombre);
-    }
-    for (let dx = -5; dx <= 5; dx++) {
-      const chute = Math.abs(dx) > 3 ? 1 : 0;
-      pixel(ax(garde) + dx, garde + chute, Math.abs(dx) < 4 ? COULEURS_FEU.epeeClair : COULEURS_FEU.epeeMoyen);
-      pixel(ax(garde) + dx, garde + 1 + chute, COULEURS_FEU.epeeSombre);
+    for (let dx = -4; dx <= 5; dx++) {
+      const pointe = dx === -4 || dx === 5 ? 1 : 0;
+      pixel(ax(garde) + dx, garde + pointe, dx < 1 ? COULEURS_FEU.acierClair : COULEURS_FEU.acierMoyen);
+      pixel(ax(garde) + dx, garde + 1 + pointe, COULEURS_FEU.acierSombre);
     }
     for (let y = garde + 2; y <= bas; y++) {
-      const centre = ax(y);
-      const torsade = y < garde + 14;
-      const chaleur = hauteur > 0 ? Math.max(0, (y - (bas - reglages.hauteurFlamme * 0.8)) / (reglages.hauteurFlamme * 0.8)) : 0;
-      for (let k = 0; k < largeurLame; k++) {
-        const x = centre - Math.floor(largeurLame / 2) + k;
-        let couleur = k === 0 ? COULEURS_FEU.epeeClair : k === largeurLame - 1 ? COULEURS_FEU.epeeSombre : COULEURS_FEU.epeeMoyen;
-        if (torsade && (y + k) % 4 < 2) {
-          couleur = k === 0 ? COULEURS_FEU.epeeMoyen : COULEURS_FEU.epeeClair;
-        }
-        if (chaleur > 0 && hachage(x * 5 + y, etat.image) < chaleur * 0.6 * hauteur) {
-          couleur = chaleur > 0.6 ? COULEURS_FEU.epeeBraise : COULEURS_FEU.epeeReflet;
-        }
-        pixel(x, y, couleur);
-      }
+      const x = ax(y) - 1;
+      const chaleur = hauteur > 0 ? Math.max(0, (y - (bas - reglages.hauteurFlamme * 0.5)) / (reglages.hauteurFlamme * 0.5)) : 0;
+      const couleurs = [COULEURS_FEU.acierReflet, COULEURS_FEU.acierClair, COULEURS_FEU.acierMoyen, COULEURS_FEU.acierSombre];
+      couleurs.forEach((couleur, k) => {
+        const chauffe = chaleur > 0 && hachage(x * 5 + k + y, etat.image) < chaleur * 0.5 * hauteur;
+        pixel(x + k, y, chauffe ? COULEURS_FEU.acierChaud : couleur);
+      });
     }
   };
 
@@ -224,32 +337,47 @@ function creerFeu(canvas, reglages) {
     if (hauteur <= 0) {
       return;
     }
+    const { ondulation, montee, decoupe, frequence, contraste } = reglages.mouvement;
     const temps = etat.image / IMAGES_PAR_SECONDE_FEU;
-    const base = sommetCendre() + 2;
-    const couverture = new Map();
-    reglages.langues.forEach((langue) => {
-      const h = reglages.hauteurFlamme * hauteur * langue.hauteur * (0.82 + 0.18 * Math.sin(temps * reglages.vitesse * 1.3 + langue.phase));
-      const largeur = reglages.demiLargeur * langue.largeur * Math.min(1.1, 0.4 + hauteur * 0.6);
-      for (let k = 0; k < h; k++) {
-        const v = k / h;
-        const centre = reglages.centreX + langue.decalage * (1 - v * 0.5) + Math.sin(temps * reglages.vitesse + langue.phase + v * 3.2) * reglages.balancement * v * 1.6;
-        const demi = largeur * Math.pow(1 - v, 0.75) * (v < 0.15 ? 0.75 + v * 1.6 : 1);
-        for (let x = Math.floor(centre - demi); x <= Math.ceil(centre + demi); x++) {
-          const r = Math.abs(x - centre) / Math.max(demi, 0.5);
-          if (r > 1) {
-            continue;
-          }
-          const chaleur = (1 - v) * 0.7 + (1 - r) * 0.5 - v * 0.25;
-          const cle = `${x},${base - k}`;
-          couverture.set(cle, Math.max(couverture.get(cle) || 0, chaleur));
+    const { x0, x1, y0, y1 } = etat.cadre;
+    const etirement = Math.max(hauteur, 0.05);
+    const ouverture = Math.min(1, 0.55 + 0.45 * hauteur);
+    const souffle = 0.94 + 0.12 * bruit(temps * 1.7, 7.3);
+    const donnees = imageFlamme.data;
+    donnees.fill(0);
+    for (let y = y0; y <= y1; y++) {
+      const v = Math.max(0, (baseFlamme - y) / reglages.hauteurFlamme);
+      for (let x = x0; x <= x1; x++) {
+        const dx = (bruit(x * 0.09, y * 0.06 + temps * 1.4) - 0.5) * ondulation * (0.3 + v * 1.4);
+        const dy = (bruit(x * 0.07 + 31, y * 0.05 + temps * 1.1) - 0.5) * ondulation * 0.8;
+        const sx = reglages.centreX + (x + dx - reglages.centreX) / ouverture;
+        const sy = baseFlamme - (baseFlamme - (y + dy)) / etirement;
+        const base = echantillonner(sx, sy);
+        if (base <= 0.03) {
+          continue;
         }
+        const grain = 0.65 * bruit(x * frequence * 1.6, (y + temps * montee) * frequence * 0.6) + 0.35 * bruit(x * frequence * 3.4 + 17, (y + temps * montee * 1.5) * frequence * 1.3);
+        const relief = Math.min(1, Math.max(0, (grain - 0.5) * contraste + 0.5));
+        const chaleur = base * souffle * (1 - decoupe * 0.5 + decoupe * relief) - v * 0.06;
+        let niveau = -1;
+        for (let k = palette.length - 1; k >= 0; k--) {
+          if (chaleur >= palette[k][0]) {
+            niveau = k;
+            break;
+          }
+        }
+        if (niveau < 0) {
+          continue;
+        }
+        const i = (y * L + x) * 4;
+        donnees[i] = palette[niveau][1];
+        donnees[i + 1] = palette[niveau][2];
+        donnees[i + 2] = palette[niveau][3];
+        donnees[i + 3] = 255;
       }
-    });
-    couverture.forEach((chaleur, cle) => {
-      const [x, y] = cle.split(",").map(Number);
-      const niveau = chaleur > 1.02 ? 5 : chaleur > 0.85 ? 4 : chaleur > 0.62 ? 3 : chaleur > 0.4 ? 2 : chaleur > 0.18 ? 1 : 0;
-      pixel(x, y, reglages.palette[niveau]);
-    });
+    }
+    contexteTampon.putImageData(imageFlamme, 0, 0);
+    contexte.drawImage(tampon, 0, 0);
   };
 
   const dessinerParticules = () => {
@@ -270,13 +398,26 @@ function creerFeu(canvas, reglages) {
     });
   };
 
+  const dessinerCalque = (rang) => {
+    contexte.drawImage(etat.sprite, rang * L, 0, L, H, 0, 0, L, H);
+  };
+
   const dessiner = () => {
-    contexte.clearRect(0, 0, reglages.largeur, reglages.hauteur);
+    if (!etat.pret) {
+      return;
+    }
+    contexte.clearRect(0, 0, L, H);
     const hauteur = hauteurFlamme();
-    dessinerEpee(hauteur);
-    dessinerCendre(hauteur);
-    dessinerOs();
-    dessinerFlammes(hauteur);
+    if (reglages.calques) {
+      dessinerCalque(reglages.calques.arriere);
+      dessinerFlammes(hauteur);
+      dessinerCalque(reglages.calques.avant);
+    } else {
+      dessinerEpee(hauteur);
+      dessinerCendre(hauteur);
+      dessinerOs();
+      dessinerFlammes(hauteur);
+    }
     dessinerParticules();
   };
 
@@ -292,6 +433,19 @@ function creerFeu(canvas, reglages) {
     }
     requestAnimationFrame(boucle);
   };
+
+  if (reglages.calques) {
+    const image = new Image();
+    image.addEventListener("load", () => {
+      etat.sprite = image;
+      construireChampImage(image);
+      etat.pret = true;
+      dessiner();
+    });
+    image.src = canvas.dataset.sprite;
+  } else {
+    construireChampLobes();
+  }
 
   return {
     demarrer(mode = "eteint") {
@@ -309,10 +463,10 @@ function creerFeu(canvas, reglages) {
     allumer(duree) {
       etat.mode = "allumage";
       for (let i = 0; i < reglages.etincellesAllumage; i++) {
-        etat.etincelles.push({ x: reglages.centreX + (Math.random() - 0.5) * 8, y: sommetCendre() - 3, vx: (Math.random() - 0.5) * 2.4, vy: -1.4 - Math.random() * 2.4, age: 0, vie: 12 + Math.random() * 12 });
+        etat.etincelles.push({ x: reglages.centreX + (Math.random() - 0.5) * 8, y: sommetFoyer() - 3, vx: (Math.random() - 0.5) * 2.4, vy: -1.4 - Math.random() * 2.4, age: 0, vie: 12 + Math.random() * 12 });
       }
       for (let i = 0; i < 8; i++) {
-        ajouterFumee(reglages.centreX + (Math.random() - 0.5) * 10, sommetCendre() - 4);
+        ajouterFumee(reglages.centreX + (Math.random() - 0.5) * 10, sommetFoyer() - 4);
       }
       gsap.to(etat, { allumage: 1, duration: duree, ease: "none", onComplete: () => { etat.mode = "allume"; } });
     },

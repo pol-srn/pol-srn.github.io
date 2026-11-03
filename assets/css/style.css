@@ -42,11 +42,12 @@
   --couleur-nuit: 4 7 14;
   --couleur-braise: 240 160 64;
   --couleur-etincelle: #ffd98a;
-  --couleur-etoile: #d6e6f0;
+  --couleur-etoile: #6f8fa8;
+  --couleur-etoile-brillante: #e6f0f6;
   --couleur-noir: #04070e;
-  --couleur-acier: #7a8498;
-  --couleur-acier-sombre: #1c2028;
-  --couleur-jauge: #0c1018;
+  --couleur-bronze: #9a7a42;
+  --couleur-bronze-sombre: #4a3820;
+  --couleur-jauge: #140c0a;
 
   --police-titre: "UnifrakturMaguntia", "Old English Text MT", serif;
   --police-texte: "Schibsted Grotesk", system-ui, sans-serif;
@@ -97,6 +98,8 @@
 }
 
 html {
+  overflow-y: scroll;
+  scroll-snap-type: y mandatory;
   scrollbar-color: var(--couleur-filet) var(--couleur-fond);
 }
 
@@ -130,7 +133,8 @@ img {
   }
 }
 
-.chargement-actif {
+.chargement-actif body {
+  height: 100svh;
   overflow: hidden;
 }
 
@@ -224,9 +228,10 @@ img {
 }
 
 .chargement__embout--droite {
-  width: 0.75rem;
+  width: 1.75rem;
   margin-left: -2px;
-  background: url("../images/chargement/embout-droit.svg") center / 100% 100% no-repeat;
+  background: url("../images/chargement/embout-gauche.svg") center / 100% 100% no-repeat;
+  transform: scaleX(-1);
 }
 
 .chargement__jauge {
@@ -234,9 +239,9 @@ img {
   position: relative;
   height: var(--hauteur-jauge);
   background: var(--couleur-jauge);
-  border-top: 2px solid var(--couleur-acier);
-  border-bottom: 2px solid var(--couleur-acier);
-  box-shadow: inset 0 1px 0 var(--couleur-acier-sombre), inset 0 -1px 0 var(--couleur-acier-sombre);
+  border-top: 2px solid var(--couleur-bronze);
+  border-bottom: 2px solid var(--couleur-bronze);
+  box-shadow: inset 0 1px 0 var(--couleur-bronze-sombre), inset 0 -1px 0 var(--couleur-bronze-sombre);
 }
 
 .chargement__remplissage {
@@ -245,7 +250,7 @@ img {
   bottom: 1px;
   left: 0;
   width: 100%;
-  background: linear-gradient(to bottom, #ffb070 0%, #e8603a 25%, #c03a20 60%, #7a1c12 100%);
+  background: linear-gradient(to bottom, #ffd08a 0%, #f0a040 20%, #c8502a 60%, #7a2a18 100%);
   transform: scaleX(0);
   transform-origin: left center;
 }
@@ -284,6 +289,7 @@ img {
 .chargement__eclat {
   position: absolute;
   inset: 0;
+  z-index: 2;
   background: radial-gradient(circle at var(--eclat-x, 50%) var(--eclat-y, 62%), #fff4dc 0, #ffd08a calc(var(--eclat-rayon, 150vmax) * 0.22), #f0a040 calc(var(--eclat-rayon, 150vmax) * 0.55), rgb(200 96 42 / 0.6) calc(var(--eclat-rayon, 150vmax) * 0.8), rgb(200 96 42 / 0) var(--eclat-rayon, 150vmax));
   opacity: 0;
   pointer-events: none;
@@ -357,6 +363,7 @@ img {
   height: 100svh;
   min-height: var(--hauteur-hero-min);
   overflow: hidden;
+  scroll-snap-align: start;
   background: var(--couleur-noir);
 }
 
@@ -386,10 +393,14 @@ img {
   position: absolute;
   top: var(--y);
   left: var(--x);
-  width: calc(100% / 816);
+  width: calc(200% / 816);
   aspect-ratio: 1;
   background: var(--couleur-etoile);
   opacity: var(--eclat, 0.8);
+}
+
+.hero__etoile--brillante {
+  background: var(--couleur-etoile-brillante);
 }
 
 .hero__etoile--scintille {
@@ -403,7 +414,7 @@ img {
   }
 
   50% {
-    opacity: 0.2;
+    opacity: 0.08;
   }
 }
 
@@ -636,9 +647,10 @@ img {
 .zone {
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   min-height: 100svh;
   padding: var(--espace-xxl) var(--marge-page);
+  scroll-snap-align: start;
   border-top: 1px solid var(--couleur-filet);
 }
 
@@ -659,6 +671,7 @@ img {
 
 .pied {
   padding: var(--espace-l) var(--marge-page);
+  scroll-snap-align: end;
   font-size: var(--taille-petit);
   color: var(--couleur-texte-2);
   border-top: 1px solid var(--couleur-filet);
@@ -705,18 +718,33 @@ img {
 
   .chemin__liste,
   .chemin--deploye .chemin__liste {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: stretch;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 0;
   }
 
-  .chemin__etape:not(:last-child)::after {
-    display: none;
+  .chemin__etape {
+    display: flex;
+    justify-content: center;
+  }
+
+  .chemin__etape:not(:last-child)::after,
+  .chemin--deploye .chemin__etape:not(:last-child)::after {
+    top: calc(var(--espace-xs) + var(--hauteur-feu) / 2 - 1px);
+    right: auto;
+    left: calc(50% + var(--largeur-feu) / 2 + 0.25rem);
+    width: calc(100% - var(--largeur-feu) - 0.5rem);
+    height: 2px;
+    background: repeating-linear-gradient(to right, rgb(154 171 191 / 0.35) 0 4px, rgb(154 171 191 / 0) 4px 8px);
+  }
+
+  .chemin__etape--parcourue:not(:last-child)::after {
+    background: repeating-linear-gradient(to right, rgb(var(--couleur-braise) / 0.85) 0 4px, rgb(var(--couleur-braise) / 0) 4px 8px);
   }
 
   .chemin__lien {
     flex-direction: column-reverse;
+    align-items: center;
     gap: 0.25rem;
     min-width: 2.75rem;
   }

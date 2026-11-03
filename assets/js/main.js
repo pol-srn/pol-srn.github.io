@@ -1,13 +1,13 @@
 const CHARGEMENT = {
-  dureeMinimale: 4.4,
+  dureeMinimale: 4.8,
   delaiChute: 0.3,
-  dureeChute: 1.8,
+  dureeChute: 2.2,
   progressionImpact: 0.25,
-  hauteurChute: 0.62,
+  hauteurApparition: 16,
   pointImpact: 0.8,
-  courbeChute: "power3.in",
-  debutSeparation: 0.12,
-  finSeparation: 0.9,
+  courbeChute: "power2.in",
+  entreeSeparation: 0.06,
+  finSeparation: 0.92,
   ecartEtincelles: 26,
   toursEtincelles: 3,
   dureeAllumage: 0.9,
@@ -16,7 +16,7 @@ const CHARGEMENT = {
   dureeRemplissage: 0.4,
   dureeEmbrasement: 1,
   agrandissementLueur: 3,
-  dureeEclat: 0.7,
+  dureeEclat: 0.8,
   rayonEclatDepart: "150vmax",
   rayonEclatFin: "9vmax",
   dureeResserrement: 2,
@@ -24,8 +24,9 @@ const CHARGEMENT = {
 };
 
 const DECOR = {
-  nombreEtoiles: 46,
-  partScintillante: 0.45,
+  nombreEtoiles: 106,
+  partBrillante: 0.34,
+  partScintillante: 0.6,
   hauteurCiel: 55,
   derivBrumeLoin: 1.2,
   dureeBrumeLoin: 26,
@@ -47,9 +48,9 @@ const NAVIGATION = {
   pasReplie: "3.75rem",
   dureeRepli: 0.8,
   debutZone: "top 55%",
-  dureeApparitionAnnonce: 0.5,
-  pauseAnnonce: 0.8,
-  dureeGlissement: 0.9
+  dureeApparitionAnnonce: 0.35,
+  pauseAnnonce: 0.25,
+  dureeGlissement: 0.7
 };
 
 const SELECTEURS = {
@@ -72,6 +73,7 @@ const SELECTEURS = {
   etape: ".chemin__etape",
   lien: ".chemin__lien",
   nom: ".chemin__nom",
+  feu: ".chemin__feu",
   etincelle: ".chemin__etincelle",
   annonce: ".annonce",
   annonceVoile: ".annonce__voile",
@@ -89,7 +91,8 @@ const CLASSES = {
   etapeParcourue: "chemin__etape--parcourue",
   cheminDeploye: "chemin--deploye",
   etoile: "hero__etoile",
-  etoileScintille: "hero__etoile--scintille"
+  etoileScintille: "hero__etoile--scintille",
+  etoileBrillante: "hero__etoile--brillante"
 };
 
 const MEDIAS = {
@@ -159,7 +162,7 @@ function faireTomberEtincelles(feu, quandArrivee) {
   const [premiere, seconde] = document.querySelectorAll(SELECTEURS.chargementEtincelle);
   const courbe = gsap.parseEase(CHARGEMENT.courbeChute);
   const chute = { progression: 0 };
-  const depart = () => -window.innerHeight * CHARGEMENT.hauteurChute;
+  const depart = () => -CHARGEMENT.hauteurApparition - feu.getBoundingClientRect().top;
   const arrivee = () => feu.offsetHeight * CHARGEMENT.pointImpact;
   return gsap.timeline({ delay: CHARGEMENT.delaiChute })
     .set([premiere, seconde], { opacity: 1, y: depart(), x: 0 })
@@ -170,9 +173,11 @@ function faireTomberEtincelles(feu, quandArrivee) {
       onUpdate: () => {
         const p = chute.progression;
         const y = depart() + (arrivee() - depart()) * courbe(p);
-        const s = gsap.utils.clamp(0, 1, (p - CHARGEMENT.debutSeparation) / (CHARGEMENT.finSeparation - CHARGEMENT.debutSeparation));
+        const haut = feu.getBoundingClientRect().top;
+        const entree = window.innerHeight * CHARGEMENT.entreeSeparation;
+        const s = gsap.utils.clamp(0, 1, (haut + y - entree) / ((haut + arrivee() - entree) * CHARGEMENT.finSeparation));
         const ecart = CHARGEMENT.ecartEtincelles * Math.sin(Math.PI * s);
-        const angle = p * Math.PI * 2 * CHARGEMENT.toursEtincelles;
+        const angle = s * Math.PI * 2 * CHARGEMENT.toursEtincelles;
         const profondeur = Math.cos(angle);
         gsap.set(premiere, { y, x: ecart * Math.sin(angle), scale: 1 + 0.35 * profondeur, opacity: 0.75 + 0.25 * profondeur });
         gsap.set(seconde, { y, x: -ecart * Math.sin(angle), scale: 1 - 0.35 * profondeur, opacity: 0.75 - 0.25 * profondeur });
@@ -239,7 +244,7 @@ function lancerChargement() {
     gsap.set(eclat, { "--eclat-rayon": CHARGEMENT.rayonEclatDepart });
     gsap.timeline({ onComplete: () => terminerChargement(ecran) })
       .to(SELECTEURS.chargementLueur, { scale: CHARGEMENT.agrandissementLueur, opacity: 1, duration: CHARGEMENT.dureeEmbrasement, ease: "power2.in" })
-      .to(eclat, { opacity: 1, duration: CHARGEMENT.dureeEclat, ease: "power2.in" }, `-=${CHARGEMENT.dureeEclat * 0.4}`)
+      .to(eclat, { opacity: 1, duration: CHARGEMENT.dureeEclat, ease: "power2.in" }, 0)
       .add(() => {
         const zone = document.querySelector(SELECTEURS.heroFeu).getBoundingClientRect();
         gsap.set(eclat, { "--eclat-x": `${zone.left + zone.width / 2}px`, "--eclat-y": `${zone.top + zone.height * 0.8}px` });
@@ -252,7 +257,8 @@ function lancerChargement() {
   };
 
   Promise.all([attenteTemps, attenteFichiers, attenteAllumage]).then(() => {
-    gsap.to(remplissage, { scaleX: 1, duration: CHARGEMENT.dureeRemplissage, ease: "power1.out", onComplete: embraser });
+    const reste = 1 - gsap.getProperty(remplissage, "scaleX");
+    gsap.to(remplissage, { scaleX: 1, duration: CHARGEMENT.dureeRemplissage * reste, ease: "power1.out", onComplete: embraser });
     jauge.style.setProperty("--progression", 1);
   });
 }
@@ -264,11 +270,13 @@ function creerEtoiles() {
     etoile.className = CLASSES.etoile;
     etoile.style.setProperty("--x", `${(Math.random() * 100).toFixed(2)}%`);
     etoile.style.setProperty("--y", `${(1 + Math.random() * DECOR.hauteurCiel).toFixed(2)}%`);
-    etoile.style.setProperty("--eclat", (0.45 + Math.random() * 0.5).toFixed(2));
+    const brillante = Math.random() < DECOR.partBrillante;
+    etoile.classList.toggle(CLASSES.etoileBrillante, brillante);
+    etoile.style.setProperty("--eclat", ((brillante ? 0.85 : 0.6) + Math.random() * 0.15).toFixed(2));
     if (Math.random() < DECOR.partScintillante) {
       etoile.classList.add(CLASSES.etoileScintille);
-      etoile.style.setProperty("--duree", `${(3 + Math.random() * 4).toFixed(2)}s`);
-      etoile.style.setProperty("--delai", `${(Math.random() * 6).toFixed(2)}s`);
+      etoile.style.setProperty("--duree", `${(1.6 + Math.random() * 2.4).toFixed(2)}s`);
+      etoile.style.setProperty("--delai", `${(-Math.random() * 4).toFixed(2)}s`);
     }
     conteneur.append(etoile);
   }
@@ -293,12 +301,19 @@ function suivreSections(avecEtincelle) {
         if (etat.isActive) {
           activerEtape(index);
         }
-      },
+      }
+    });
+    if (!avecEtincelle || index === sections.length - 1) {
+      return;
+    }
+    ScrollTrigger.create({
+      trigger: section,
+      start: "top top",
+      end: "bottom top",
       onUpdate: (etat) => {
-        if (avecEtincelle && index < sections.length - 1) {
-          const pas = etapes[1].offsetTop - etapes[0].offsetTop;
-          gsap.set(etincelle, { y: (index + etat.progress) * pas, opacity: etat.progress > 0.02 && etat.progress < 0.98 ? 1 : 0 });
-        }
+        const pas = etapes[1].offsetTop - etapes[0].offsetTop;
+        const trajet = pas - etapes[0].querySelector(SELECTEURS.feu).offsetHeight - etincelle.offsetHeight - 2;
+        gsap.set(etincelle, { y: index * pas + etat.progress * trajet, opacity: etat.progress > 0.02 && etat.progress < 0.98 ? 1 : 0 });
       }
     });
   });
@@ -306,13 +321,15 @@ function suivreSections(avecEtincelle) {
 
 function transformerNavigation(avecMouvement) {
   const noms = [...chemin.querySelectorAll(SELECTEURS.nom)];
+  let animationChemin = null;
   const replier = () => {
     const autres = noms.filter((nom, i) => i !== indexActif);
     if (!avecMouvement) {
       chemin.classList.remove(CLASSES.cheminDeploye);
       return;
     }
-    gsap.timeline({ onComplete: () => {
+    animationChemin?.kill();
+    animationChemin = gsap.timeline({ onComplete: () => {
       chemin.classList.remove(CLASSES.cheminDeploye);
       chemin.style.removeProperty("--pas-chemin-deploye");
       gsap.set(noms, { clearProps: "all" });
@@ -321,14 +338,23 @@ function transformerNavigation(avecMouvement) {
       .to(chemin, { "--pas-chemin-deploye": NAVIGATION.pasReplie, duration: NAVIGATION.dureeRepli, ease: "power3.inOut" }, "<0.1");
   };
   const deployer = () => {
+    const replie = !chemin.classList.contains(CLASSES.cheminDeploye);
     chemin.classList.add(CLASSES.cheminDeploye);
     if (!avecMouvement) {
       return;
     }
+    animationChemin?.kill();
     const autres = noms.filter((nom, i) => i !== indexActif);
-    gsap.timeline({ onComplete: () => chemin.style.removeProperty("--pas-chemin-deploye") })
-      .fromTo(chemin, { "--pas-chemin-deploye": NAVIGATION.pasReplie }, { "--pas-chemin-deploye": NAVIGATION.pasDeploye, duration: NAVIGATION.dureeRepli, ease: "power3.inOut" })
-      .fromTo(autres, { autoAlpha: 0, x: 8 }, { autoAlpha: 1, x: 0, duration: NAVIGATION.dureeRepli * 0.5, stagger: 0.04, ease: "power2.out", clearProps: "all" }, "-=0.3");
+    if (replie) {
+      gsap.set(chemin, { "--pas-chemin-deploye": NAVIGATION.pasReplie });
+      gsap.set(autres, { autoAlpha: 0, x: 8 });
+    }
+    animationChemin = gsap.timeline({ onComplete: () => {
+      chemin.style.removeProperty("--pas-chemin-deploye");
+      gsap.set(noms, { clearProps: "all" });
+    } })
+      .to(chemin, { "--pas-chemin-deploye": NAVIGATION.pasDeploye, duration: NAVIGATION.dureeRepli, ease: "power3.inOut" })
+      .to(noms, { autoAlpha: 1, x: 0, duration: NAVIGATION.dureeRepli * 0.5, stagger: 0.04, ease: "power2.out" }, "-=0.3");
   };
   ScrollTrigger.create({ trigger: hero, start: NAVIGATION.seuilRepli, onEnter: replier, onLeaveBack: deployer });
 }
@@ -356,7 +382,9 @@ function annoncerZone(zone) {
     .fromTo(SELECTEURS.annonceFilet, { scaleX: 0 }, { scaleX: 1, duration: NAVIGATION.dureeApparitionAnnonce * 1.4, ease: "power3.out" }, "<")
     .add(() => {
       const depart = annonceTitre.getBoundingClientRect();
-      const cible = titreZone.getBoundingClientRect();
+      const titre = titreZone.getBoundingClientRect();
+      const hautZone = zone.getBoundingClientRect().top;
+      const cible = { left: titre.left, top: titre.top - hautZone, height: titre.height };
       gsap.timeline({ onComplete: () => {
         reveler(titreZone);
         titreEnAttente = null;
