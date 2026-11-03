@@ -11,6 +11,7 @@
   <link rel="alternate" hreflang="en" href="./">
   <link rel="preload" href="../assets/fonts/unifrakturmaguntia-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="../assets/fonts/schibsted-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../assets/fonts/pixelify-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="../assets/css/style.css">
   <script>document.documentElement.className = "js chargement-actif";</script>
 </head>
@@ -20,13 +21,17 @@
     <div class="chargement__scene" aria-hidden="true">
       <div class="chargement__feu">
         <div class="chargement__lueur"></div>
-        <canvas class="chargement__canvas" width="64" height="72"></canvas>
+        <canvas class="chargement__canvas" width="88" height="100"></canvas>
+        <span class="chargement__etincelle"></span>
         <span class="chargement__etincelle"></span>
       </div>
       <div class="chargement__barre">
-        <span class="chargement__ornement chargement__ornement--gauche"></span>
-        <span class="chargement__jauge"><span class="chargement__remplissage"></span></span>
-        <span class="chargement__ornement chargement__ornement--droite"></span>
+        <span class="chargement__embout chargement__embout--gauche"></span>
+        <span class="chargement__jauge">
+          <span class="chargement__remplissage"></span>
+          <span class="chargement__fermoir"></span>
+        </span>
+        <span class="chargement__embout chargement__embout--droite"></span>
       </div>
       <p class="chargement__texte">Loading<span class="chargement__point">.</span><span class="chargement__point">.</span><span class="chargement__point">.</span></p>
     </div>
@@ -42,42 +47,22 @@
     </ul>
   </header>
 
-  <nav class="chemin chemin--replie" aria-label="Main navigation">
+  <nav class="chemin chemin--deploye" aria-label="Main navigation">
     <ol class="chemin__liste">
       <li class="chemin__etape">
-        <a class="chemin__lien chemin__lien--actif" href="#home" aria-current="location">
-          <span class="chemin__nom">Home</span>
-          <img class="chemin__feu chemin__feu--allume" src="../assets/images/nav/feu-allume.svg" alt="" width="24" height="28">
-          <img class="chemin__feu chemin__feu--eteint" src="../assets/images/nav/feu-eteint.svg" alt="" width="24" height="28">
-        </a>
+        <a class="chemin__lien chemin__lien--actif" href="#home" aria-current="location"><span class="chemin__nom">Home</span><span class="chemin__feu"></span></a>
       </li>
       <li class="chemin__etape">
-        <a class="chemin__lien" href="#about">
-          <span class="chemin__nom">About</span>
-          <img class="chemin__feu chemin__feu--allume" src="../assets/images/nav/feu-allume.svg" alt="" width="24" height="28">
-          <img class="chemin__feu chemin__feu--eteint" src="../assets/images/nav/feu-eteint.svg" alt="" width="24" height="28">
-        </a>
+        <a class="chemin__lien" href="#about"><span class="chemin__nom">About</span><span class="chemin__feu"></span></a>
       </li>
       <li class="chemin__etape">
-        <a class="chemin__lien" href="#projects">
-          <span class="chemin__nom">Projects</span>
-          <img class="chemin__feu chemin__feu--allume" src="../assets/images/nav/feu-allume.svg" alt="" width="24" height="28">
-          <img class="chemin__feu chemin__feu--eteint" src="../assets/images/nav/feu-eteint.svg" alt="" width="24" height="28">
-        </a>
+        <a class="chemin__lien" href="#projects"><span class="chemin__nom">Projects</span><span class="chemin__feu"></span></a>
       </li>
       <li class="chemin__etape">
-        <a class="chemin__lien" href="#skills">
-          <span class="chemin__nom">Skills</span>
-          <img class="chemin__feu chemin__feu--allume" src="../assets/images/nav/feu-allume.svg" alt="" width="24" height="28">
-          <img class="chemin__feu chemin__feu--eteint" src="../assets/images/nav/feu-eteint.svg" alt="" width="24" height="28">
-        </a>
+        <a class="chemin__lien" href="#skills"><span class="chemin__nom">Skills</span><span class="chemin__feu"></span></a>
       </li>
       <li class="chemin__etape">
-        <a class="chemin__lien" href="#contact">
-          <span class="chemin__nom">Contact</span>
-          <img class="chemin__feu chemin__feu--allume" src="../assets/images/nav/feu-allume.svg" alt="" width="24" height="28">
-          <img class="chemin__feu chemin__feu--eteint" src="../assets/images/nav/feu-eteint.svg" alt="" width="24" height="28">
-        </a>
+        <a class="chemin__lien" href="#contact"><span class="chemin__nom">Contact</span><span class="chemin__feu"></span></a>
       </li>
     </ol>
     <span class="chemin__etincelle"></span>
@@ -86,17 +71,18 @@
   <main id="content">
     <section class="hero" id="home" aria-labelledby="hero-title">
       <div class="hero__scene" aria-hidden="true">
-        <img class="hero__calque hero__calque--ciel" src="../assets/images/hero/ciel.png" alt="" width="720" height="452">
-        <img class="hero__calque hero__calque--montagne" src="../assets/images/hero/montagne.png" alt="" width="720" height="452">
-        <img class="hero__calque hero__calque--foret-loin" src="../assets/images/hero/foret-loin.png" alt="" width="720" height="452">
-        <img class="hero__calque hero__calque--brume" src="../assets/images/hero/brume.png" alt="" width="720" height="452">
-        <img class="hero__calque hero__calque--foret-proche" src="../assets/images/hero/foret-proche.png" alt="" width="720" height="452">
-        <img class="hero__calque hero__calque--arcade" src="../assets/images/hero/arcade.png" alt="" width="720" height="452">
+        <img class="hero__calque hero__calque--ciel" src="../assets/images/hero/ciel.png" alt="" width="816" height="452">
+        <div class="hero__etoiles"></div>
+        <img class="hero__calque hero__calque--montagne" src="../assets/images/hero/montagne.png" alt="" width="816" height="452">
+        <img class="hero__calque hero__calque--brume-loin" src="../assets/images/hero/brume-loin.png" alt="" width="816" height="452">
+        <img class="hero__calque hero__calque--foret-loin" src="../assets/images/hero/foret-loin.png" alt="" width="816" height="452">
+        <img class="hero__calque hero__calque--brume-proche" src="../assets/images/hero/brume-proche.png" alt="" width="816" height="452">
+        <img class="hero__calque hero__calque--foret-proche" src="../assets/images/hero/foret-proche.png" alt="" width="816" height="452">
+        <img class="hero__calque hero__calque--arcade" src="../assets/images/hero/arcade.png" alt="" width="816" height="452">
         <div class="hero__vignette"></div>
         <div class="hero__halo"></div>
         <div class="hero__lune"></div>
-        <img class="hero__feu" src="../assets/images/hero/feu.png" alt="" width="480" height="822">
-        <div class="hero__braises"></div>
+        <canvas class="hero__feu" width="120" height="206"></canvas>
       </div>
 
       <div class="hero__contenu">
@@ -104,15 +90,6 @@
         <p class="hero__accroche">Graphic design, video and interface design. Multimedia student in Limoges, France.</p>
         <p class="hero__dispo">Available for an internship from April 2027</p>
       </div>
-
-      <nav class="menu-titre" aria-label="Title menu">
-        <ul class="menu-titre__liste">
-          <li><a class="menu-titre__lien menu-titre__lien--actif" href="#projects">Projects</a></li>
-          <li><a class="menu-titre__lien" href="#about">About</a></li>
-          <li><a class="menu-titre__lien" href="#skills">Skills</a></li>
-          <li><a class="menu-titre__lien" href="#contact">Contact</a></li>
-        </ul>
-      </nav>
     </section>
 
     <section class="zone" id="about" aria-labelledby="title-about">

@@ -42,7 +42,11 @@
   --couleur-nuit: 4 7 14;
   --couleur-braise: 240 160 64;
   --couleur-etincelle: #ffd98a;
+  --couleur-etoile: #d6e6f0;
   --couleur-noir: #04070e;
+  --couleur-acier: #7a8498;
+  --couleur-acier-sombre: #1c2028;
+  --couleur-jauge: #0c1018;
 
   --police-titre: "UnifrakturMaguntia", "Old English Text MT", serif;
   --police-texte: "Schibsted Grotesk", system-ui, sans-serif;
@@ -65,25 +69,21 @@
   --marge-page: clamp(1rem, 3.3vw, 3rem);
 
   --largeur-texte: 36rem;
-  --largeur-menu: 15.5rem;
   --pas-chemin: 3.75rem;
+  --pas-chemin-deploye: 1rem;
   --hauteur-feu: 1.75rem;
   --largeur-feu: 1.5rem;
+  --largeur-planche-feu: 6rem;
   --hauteur-barre-mobile: 4.5rem;
 
-  --largeur-feu-chargement: 16rem;
-  --hauteur-feu-chargement: 18rem;
+  --largeur-feu-chargement: 16.5rem;
+  --hauteur-feu-chargement: 18.75rem;
   --decalage-feu-chargement: 14vh;
-  --largeur-barre-chargement: min(26rem, 70vw);
+  --largeur-barre-chargement: min(28rem, 76vw);
   --hauteur-jauge: 0.75rem;
-  --largeur-ornement: 1.75rem;
-  --hauteur-ornement: 1.375rem;
-  --taille-etincelle-chargement: 0.5rem;
-  --couleur-bronze: #9a7a42;
-  --couleur-bronze-clair: #d8b36a;
-  --couleur-bronze-sombre: #4a3820;
+  --taille-etincelle-chargement: 0.375rem;
 
-  --ratio-scene: 1440 / 904;
+  --ratio-scene: 1632 / 904;
   --hauteur-hero-min: 36rem;
 
   --duree-courte: 0.2s;
@@ -158,13 +158,6 @@ img {
   place-items: center;
 }
 
-.chargement__eclat {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at 50% 62%, #fff4dc 0%, #ffd08a 30%, #f0a040 65%, #c8602a 100%);
-  opacity: 0;
-}
-
 .chargement__scene {
   display: flex;
   flex-direction: column;
@@ -182,11 +175,11 @@ img {
 
 .chargement__lueur {
   position: absolute;
-  top: 72%;
+  top: 74%;
   left: 50%;
   width: 26rem;
   height: 26rem;
-  background: radial-gradient(circle, rgb(var(--couleur-braise) / 0.55) 0%, rgb(242 115 38 / 0.18) 40%, rgb(242 115 38 / 0) 70%);
+  background: radial-gradient(circle, rgb(var(--couleur-braise) / 0.5) 0%, rgb(242 115 38 / 0.16) 40%, rgb(242 115 38 / 0) 70%);
   border-radius: 50%;
   opacity: 0;
   transform: translate(-50%, -50%);
@@ -206,7 +199,7 @@ img {
   width: var(--taille-etincelle-chargement);
   height: var(--taille-etincelle-chargement);
   background: var(--couleur-etincelle);
-  box-shadow: 0 0 10px 3px rgb(var(--couleur-braise) / 0.9);
+  box-shadow: 0 0 8px 2px rgb(var(--couleur-braise) / 0.9);
   opacity: 0;
 }
 
@@ -216,40 +209,56 @@ img {
   width: var(--largeur-barre-chargement);
 }
 
-.chargement__ornement {
+.chargement__embout {
   flex-shrink: 0;
   position: relative;
   z-index: 1;
-  width: var(--largeur-ornement);
-  height: var(--hauteur-ornement);
-  background: url("../images/chargement/ornement.svg") center / contain no-repeat;
+  height: 1.75rem;
   image-rendering: pixelated;
 }
 
-.chargement__ornement--gauche {
-  margin-right: -0.25rem;
+.chargement__embout--gauche {
+  width: 1.75rem;
+  margin-right: -2px;
+  background: url("../images/chargement/embout-gauche.svg") center / 100% 100% no-repeat;
 }
 
-.chargement__ornement--droite {
-  margin-left: -0.25rem;
-  transform: scaleX(-1);
+.chargement__embout--droite {
+  width: 0.75rem;
+  margin-left: -2px;
+  background: url("../images/chargement/embout-droit.svg") center / 100% 100% no-repeat;
 }
 
 .chargement__jauge {
   flex: 1;
+  position: relative;
   height: var(--hauteur-jauge);
-  padding: 2px;
-  background: #140c0a;
-  border: 1px solid var(--couleur-bronze);
-  box-shadow: inset 0 0 0 1px var(--couleur-bronze-sombre), 0 0 0 1px #050304;
+  background: var(--couleur-jauge);
+  border-top: 2px solid var(--couleur-acier);
+  border-bottom: 2px solid var(--couleur-acier);
+  box-shadow: inset 0 1px 0 var(--couleur-acier-sombre), inset 0 -1px 0 var(--couleur-acier-sombre);
 }
 
 .chargement__remplissage {
-  display: block;
-  height: 100%;
-  background: linear-gradient(to bottom, #ffd08a 0%, #f0a040 20%, #c8502a 60%, #7a2a18 100%);
+  position: absolute;
+  top: 1px;
+  bottom: 1px;
+  left: 0;
+  width: 100%;
+  background: linear-gradient(to bottom, #ffb070 0%, #e8603a 25%, #c03a20 60%, #7a1c12 100%);
   transform: scaleX(0);
   transform-origin: left center;
+}
+
+.chargement__fermoir {
+  position: absolute;
+  top: 50%;
+  left: calc(var(--progression, 0) * 100%);
+  width: 1.25rem;
+  height: 1.75rem;
+  background: url("../images/chargement/fermoir.svg") center / 100% 100% no-repeat;
+  image-rendering: pixelated;
+  translate: -50% -50%;
 }
 
 .chargement__texte {
@@ -272,6 +281,14 @@ img {
   animation-delay: 0.6s;
 }
 
+.chargement__eclat {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at var(--eclat-x, 50%) var(--eclat-y, 62%), #fff4dc 0, #ffd08a calc(var(--eclat-rayon, 150vmax) * 0.22), #f0a040 calc(var(--eclat-rayon, 150vmax) * 0.55), rgb(200 96 42 / 0.6) calc(var(--eclat-rayon, 150vmax) * 0.8), rgb(200 96 42 / 0) var(--eclat-rayon, 150vmax));
+  opacity: 0;
+  pointer-events: none;
+}
+
 @keyframes point-chargement {
   0% {
     opacity: 0;
@@ -279,12 +296,6 @@ img {
 
   50% {
     opacity: 1;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .chargement__point {
-    animation: none;
   }
 }
 
@@ -346,16 +357,16 @@ img {
   height: 100svh;
   min-height: var(--hauteur-hero-min);
   overflow: hidden;
+  background: var(--couleur-noir);
 }
 
 .hero__scene {
   position: absolute;
   bottom: 0;
   left: 50%;
-  width: max(100%, calc(max(100svh, var(--hauteur-hero-min)) * 1440 / 904));
+  width: max(100%, calc(max(100svh, var(--hauteur-hero-min)) * 1632 / 904));
   aspect-ratio: var(--ratio-scene);
   translate: -50% 0;
-  transform-origin: 50% 85%;
 }
 
 .hero__calque {
@@ -366,6 +377,36 @@ img {
   image-rendering: pixelated;
 }
 
+.hero__etoiles {
+  position: absolute;
+  inset: 0;
+}
+
+.hero__etoile {
+  position: absolute;
+  top: var(--y);
+  left: var(--x);
+  width: calc(100% / 816);
+  aspect-ratio: 1;
+  background: var(--couleur-etoile);
+  opacity: var(--eclat, 0.8);
+}
+
+.hero__etoile--scintille {
+  animation: scintille var(--duree, 4s) ease-in-out var(--delai, 0s) infinite;
+}
+
+@keyframes scintille {
+  0%,
+  100% {
+    opacity: var(--eclat, 0.8);
+  }
+
+  50% {
+    opacity: 0.2;
+  }
+}
+
 .hero__vignette,
 .hero__halo,
 .hero__lune {
@@ -374,61 +415,26 @@ img {
 }
 
 .hero__vignette {
-  background: radial-gradient(ellipse 62% 95% at 53.3% 88.5%, rgb(var(--couleur-nuit) / 0) 0%, rgb(var(--couleur-nuit) / 0.12) 28%, rgb(var(--couleur-nuit) / 0.5) 55%, rgb(var(--couleur-nuit) / 0.78) 78%, rgb(var(--couleur-nuit) / 0.9) 100%);
+  background: radial-gradient(ellipse 54.7% 95% at 52.94% 88.5%, rgb(var(--couleur-nuit) / 0) 0%, rgb(var(--couleur-nuit) / 0.12) 28%, rgb(var(--couleur-nuit) / 0.5) 55%, rgb(var(--couleur-nuit) / 0.78) 78%, rgb(var(--couleur-nuit) / 0.9) 100%);
 }
 
 .hero__halo {
-  background: radial-gradient(ellipse 22% 32% at 53.3% 84.1%, rgb(242 140 51 / 0.16) 0%, rgb(242 115 38 / 0.06) 50%, rgb(230 102 26 / 0) 100%);
+  background: radial-gradient(ellipse 19.4% 32% at 52.94% 84.1%, rgb(242 140 51 / 0.16) 0%, rgb(242 115 38 / 0.06) 50%, rgb(230 102 26 / 0) 100%);
   mix-blend-mode: screen;
 }
 
 .hero__lune {
-  background: radial-gradient(ellipse 4.9% 7.8% at 62.2% 28.3%, rgb(158 173 184 / 0.55) 0%, rgb(140 158 173 / 0.42) 62%, rgb(77 102 128 / 0.12) 72%, rgb(51 77 102 / 0) 100%);
+  background: radial-gradient(ellipse 4.3% 7.8% at 60.78% 28.3%, rgb(158 173 184 / 0.55) 0%, rgb(140 158 173 / 0.42) 62%, rgb(77 102 128 / 0.12) 72%, rgb(51 77 102 / 0) 100%);
   mix-blend-mode: screen;
 }
 
 .hero__feu {
   position: absolute;
-  top: 47.8%;
-  left: 45%;
-  width: 16.67%;
+  top: 47.35%;
+  left: 45.59%;
+  width: 14.71%;
   height: auto;
-}
-
-.hero__braises {
-  position: absolute;
-  top: 48%;
-  left: 49%;
-  width: 8.5%;
-  height: 28%;
-}
-
-.hero__braise {
-  position: absolute;
-  bottom: 0;
-  left: var(--x, 50%);
-  width: 3px;
-  height: 3px;
-  background: var(--couleur-etincelle);
-  box-shadow: 0 0 6px 1px rgb(var(--couleur-braise) / 0.9);
-  opacity: 0;
-  animation: braise var(--duree, 4s) linear var(--delai, 0s) infinite;
-}
-
-@keyframes braise {
-  0% {
-    opacity: 0;
-    transform: translate(0, 0);
-  }
-
-  15% {
-    opacity: 1;
-  }
-
-  100% {
-    opacity: 0;
-    transform: translate(var(--derive, 0), -120%);
-  }
+  image-rendering: pixelated;
 }
 
 .hero__contenu {
@@ -467,81 +473,12 @@ img {
   color: var(--couleur-accent);
 }
 
-.menu-titre {
-  position: absolute;
-  top: 54%;
-  right: var(--marge-page);
-  z-index: 2;
-  width: var(--largeur-menu);
-}
-
-.menu-titre__liste {
-  display: flex;
-  flex-direction: column;
-  gap: 0.375rem;
-  margin: 0;
-  padding: 0 0 var(--espace-s);
-  list-style: none;
-  border-bottom: 1px solid rgb(154 171 191 / 0.35);
-}
-
-.menu-titre__lien {
-  display: flex;
-  align-items: center;
-  gap: 0.875rem;
-  padding: 0.625rem 1.5rem 0.625rem 1rem;
-  font-size: var(--taille-menu);
-  font-weight: 500;
-  color: var(--couleur-texte-2);
-  text-decoration: none;
-  background: linear-gradient(90deg, rgb(var(--couleur-braise) / 0) 0%, rgb(var(--couleur-braise) / 0) 100%);
-  transition: color var(--duree-courte), background var(--duree-courte);
-}
-
-.menu-titre__lien::before {
-  width: 0.625rem;
-  height: 0.625rem;
-  content: "";
-  background: var(--couleur-accent);
-  opacity: 0;
-  transform: rotate(45deg) scale(0.6);
-  transition: opacity var(--duree-courte), transform var(--duree-courte);
-}
-
-.menu-titre__lien:hover,
-.menu-titre__lien:focus-visible,
-.menu-titre__lien--actif {
-  color: var(--couleur-texte);
-  background: linear-gradient(90deg, rgb(var(--couleur-braise) / 0.28) 0%, rgb(var(--couleur-braise) / 0) 100%);
-}
-
-.menu-titre__lien:hover::before,
-.menu-titre__lien:focus-visible::before,
-.menu-titre__lien--actif::before {
-  opacity: 1;
-  transform: rotate(45deg) scale(1);
-}
-
-.menu-titre__liste:has(.menu-titre__lien:hover) .menu-titre__lien--actif:not(:hover) {
-  color: var(--couleur-texte-2);
-  background: linear-gradient(90deg, rgb(var(--couleur-braise) / 0) 0%, rgb(var(--couleur-braise) / 0) 100%);
-}
-
-.menu-titre__liste:has(.menu-titre__lien:hover) .menu-titre__lien--actif:not(:hover)::before {
-  opacity: 0;
-}
-
 .chemin {
   position: fixed;
   top: 50%;
   right: var(--marge-page);
   z-index: 10;
   transform: translateY(-50%);
-}
-
-.js .chemin--replie {
-  visibility: hidden;
-  opacity: 0;
 }
 
 .chemin__liste {
@@ -555,18 +492,26 @@ img {
   list-style: none;
 }
 
+.chemin--deploye .chemin__liste {
+  gap: var(--pas-chemin-deploye);
+}
+
 .chemin__etape {
   position: relative;
 }
 
 .chemin__etape:not(:last-child)::after {
   position: absolute;
-  top: calc(100% + 0.25rem);
+  top: calc(100% + 0.125rem);
   right: calc(var(--largeur-feu) / 2 - 1px);
   width: 2px;
-  height: calc(var(--pas-chemin) - 0.5rem);
+  height: calc(var(--pas-chemin) - 0.25rem);
   content: "";
   background: repeating-linear-gradient(to bottom, rgb(154 171 191 / 0.35) 0 4px, rgb(154 171 191 / 0) 4px 8px);
+}
+
+.chemin--deploye .chemin__etape:not(:last-child)::after {
+  height: calc(var(--pas-chemin-deploye) - 0.25rem);
 }
 
 .chemin__etape--parcourue:not(:last-child)::after {
@@ -580,6 +525,12 @@ img {
   padding: var(--espace-xs) 0;
   color: var(--couleur-texte-2);
   text-decoration: none;
+  transition: color var(--duree-courte);
+}
+
+.chemin__lien:hover,
+.chemin__lien--actif {
+  color: var(--couleur-texte);
 }
 
 .chemin__nom {
@@ -591,6 +542,7 @@ img {
   transition: opacity var(--duree-courte), transform var(--duree-courte);
 }
 
+.chemin--deploye .chemin__nom,
 .chemin__lien:hover .chemin__nom,
 .chemin__lien:focus-visible .chemin__nom,
 .chemin__lien--actif .chemin__nom {
@@ -598,28 +550,34 @@ img {
   transform: none;
 }
 
-.chemin__lien--actif {
-  color: var(--couleur-texte);
+.chemin--deploye .chemin__nom {
+  font-size: 1.75rem;
 }
 
 .chemin__feu {
+  display: block;
+  flex-shrink: 0;
   width: var(--largeur-feu);
   height: var(--hauteur-feu);
+  background: url("../images/nav/feu-eteint-anime.svg") 0 0 / var(--largeur-planche-feu) var(--hauteur-feu) no-repeat;
   image-rendering: pixelated;
+  animation: feu-anime 1.6s steps(4) infinite;
 }
 
-.chemin__feu--allume,
-.chemin__lien--actif .chemin__feu--eteint {
-  display: none;
+.chemin__lien--actif .chemin__feu {
+  background-image: url("../images/nav/feu-allume-anime.svg");
+  animation-duration: 0.6s;
 }
 
-.chemin__lien--actif .chemin__feu--allume {
-  display: block;
+@keyframes feu-anime {
+  to {
+    background-position: calc(var(--largeur-planche-feu) * -1) 0;
+  }
 }
 
 .chemin__etincelle {
   position: absolute;
-  top: calc(var(--espace-xs) + var(--hauteur-feu) + 0.25rem);
+  top: calc(var(--espace-xs) + var(--hauteur-feu) + 0.125rem);
   right: calc(var(--largeur-feu) / 2 - 2px);
   width: 4px;
   height: 4px;
@@ -658,8 +616,9 @@ img {
   margin: 0;
   font-family: var(--police-titre);
   font-size: var(--taille-titre-zone);
-  line-height: 1;
+  line-height: 0.9;
   color: var(--couleur-texte);
+  transform-origin: left top;
 }
 
 .annonce__filet {
@@ -709,24 +668,28 @@ img {
   margin: 0;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .chargement__point,
+  .hero__etoile--scintille,
+  .chemin__feu {
+    animation: none;
+  }
+}
+
 @media (max-width: 47.99rem) {
   :root {
-    --largeur-feu-chargement: 12rem;
-    --hauteur-feu-chargement: 13.5rem;
+    --largeur-feu-chargement: 11rem;
+    --hauteur-feu-chargement: 12.5rem;
     --decalage-feu-chargement: 10vh;
   }
 
   .hero__vignette {
-    background: linear-gradient(to bottom, rgb(var(--couleur-nuit) / 0.85) 0%, rgb(var(--couleur-nuit) / 0.55) 40%, rgb(var(--couleur-nuit) / 0) 60%), radial-gradient(ellipse 62% 95% at 53.3% 88.5%, rgb(var(--couleur-nuit) / 0) 0%, rgb(var(--couleur-nuit) / 0.12) 28%, rgb(var(--couleur-nuit) / 0.5) 55%, rgb(var(--couleur-nuit) / 0.78) 78%, rgb(var(--couleur-nuit) / 0.9) 100%);
+    background: linear-gradient(to bottom, rgb(var(--couleur-nuit) / 0.85) 0%, rgb(var(--couleur-nuit) / 0.55) 40%, rgb(var(--couleur-nuit) / 0) 60%), radial-gradient(ellipse 54.7% 95% at 52.94% 88.5%, rgb(var(--couleur-nuit) / 0) 0%, rgb(var(--couleur-nuit) / 0.12) 28%, rgb(var(--couleur-nuit) / 0.5) 55%, rgb(var(--couleur-nuit) / 0.78) 78%, rgb(var(--couleur-nuit) / 0.9) 100%);
   }
 
   .hero__contenu {
     top: calc(var(--espace-xxl) + var(--espace-s));
     transform: none;
-  }
-
-  .menu-titre {
-    display: none;
   }
 
   .chemin {
@@ -740,12 +703,8 @@ img {
     transform: none;
   }
 
-  .js .chemin--replie {
-    visibility: visible;
-    opacity: 1;
-  }
-
-  .chemin__liste {
+  .chemin__liste,
+  .chemin--deploye .chemin__liste {
     flex-direction: row;
     justify-content: space-between;
     align-items: stretch;
@@ -762,7 +721,8 @@ img {
     min-width: 2.75rem;
   }
 
-  .chemin__nom {
+  .chemin__nom,
+  .chemin--deploye .chemin__nom {
     font-family: var(--police-texte);
     font-size: var(--taille-mini);
     opacity: 1;
