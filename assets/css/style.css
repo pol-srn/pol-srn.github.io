@@ -43,6 +43,7 @@
   --couleur-braise: 240 160 64;
   --couleur-etincelle: #ffd98a;
   --couleur-etoile: #6f8fa8;
+  --couleur-etoile-rvb: 111 143 168;
   --couleur-etoile-brillante: #e6f0f6;
   --couleur-noir: #04070e;
   --couleur-bronze: #9a7a42;
@@ -407,6 +408,44 @@ img {
   animation: scintille var(--duree, 4s) ease-in-out var(--delai, 0s) infinite;
 }
 
+.hero__etoile--eclat {
+  width: calc(400% / 816);
+}
+
+.hero__etoile--eclat::before,
+.hero__etoile--eclat::after {
+  position: absolute;
+  background: inherit;
+  opacity: 0;
+  animation: eclat-etoile var(--duree, 4s) ease-in-out var(--delai, 0s) infinite;
+  content: "";
+}
+
+.hero__etoile--eclat::before {
+  top: 25%;
+  left: -100%;
+  width: 300%;
+  height: 50%;
+}
+
+.hero__etoile--eclat::after {
+  top: -100%;
+  left: 25%;
+  width: 50%;
+  height: 300%;
+}
+
+.hero__filante {
+  position: absolute;
+  top: var(--y);
+  left: var(--x);
+  width: calc(8000% / 816);
+  aspect-ratio: 40;
+  background: linear-gradient(to right, transparent 0 20%, rgb(var(--couleur-etoile-rvb) / 0.45) 20% 50%, rgb(var(--couleur-etoile-rvb) / 0.85) 50% 80%, var(--couleur-etoile-brillante) 80%);
+  opacity: 0;
+  transform-origin: right center;
+}
+
 @keyframes scintille {
   0%,
   100% {
@@ -414,7 +453,19 @@ img {
   }
 
   50% {
-    opacity: 0.08;
+    opacity: 0.04;
+  }
+}
+
+@keyframes eclat-etoile {
+  0%,
+  100% {
+    opacity: 0.75;
+  }
+
+  25%,
+  75% {
+    opacity: 0;
   }
 }
 
@@ -684,6 +735,8 @@ img {
 @media (prefers-reduced-motion: reduce) {
   .chargement__point,
   .hero__etoile--scintille,
+  .hero__etoile--eclat::before,
+  .hero__etoile--eclat::after,
   .chemin__feu {
     animation: none;
   }

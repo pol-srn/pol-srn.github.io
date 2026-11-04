@@ -24,21 +24,34 @@ const CHARGEMENT = {
 };
 
 const DECOR = {
-  nombreEtoiles: 106,
-  partBrillante: 0.34,
-  partScintillante: 0.6,
+  nombreEtoiles: 190,
+  partBrillante: 0.4,
+  partScintillante: 0.7,
+  partEclat: 0.08,
   hauteurCiel: 55,
+  filante: {
+    delaiMin: 3,
+    delaiMax: 8,
+    duree: 0.9,
+    angleMin: 16,
+    angleMax: 30,
+    distance: 0.2,
+    gaucheMin: 38,
+    gaucheMax: 68,
+    hautMin: 12,
+    hautMax: 32
+  },
   derivBrumeLoin: 1.2,
   dureeBrumeLoin: 26,
   derivBrumeProche: 2,
   dureeBrumeProche: 17,
   parallaxe: {
-    ".hero__calque--ciel, .hero__etoiles": 35,
-    ".hero__calque--montagne": 25,
-    ".hero__calque--brume-loin": 20,
-    ".hero__calque--foret-loin": 15,
-    ".hero__calque--brume-proche": 11,
-    ".hero__calque--foret-proche": 8
+    ".hero__calque--ciel, .hero__etoiles": 10,
+    ".hero__calque--montagne": 8,
+    ".hero__calque--brume-loin": 6,
+    ".hero__calque--foret-loin": 4,
+    ".hero__calque--brume-proche": 3,
+    ".hero__calque--foret-proche": 2
   }
 };
 
@@ -92,7 +105,9 @@ const CLASSES = {
   cheminDeploye: "chemin--deploye",
   etoile: "hero__etoile",
   etoileScintille: "hero__etoile--scintille",
-  etoileBrillante: "hero__etoile--brillante"
+  etoileBrillante: "hero__etoile--brillante",
+  etoileEclat: "hero__etoile--eclat",
+  filante: "hero__filante"
 };
 
 const MEDIAS = {
@@ -116,6 +131,7 @@ const feuHero = creerFeu(document.querySelector(SELECTEURS.heroFeu), REGLAGES_FE
 let indexActif = 0;
 let animationAnnonce = null;
 let titreEnAttente = null;
+let prochaineFilante = null;
 
 function activerEtape(index) {
   indexActif = index;
@@ -270,16 +286,43 @@ function creerEtoiles() {
     etoile.className = CLASSES.etoile;
     etoile.style.setProperty("--x", `${(Math.random() * 100).toFixed(2)}%`);
     etoile.style.setProperty("--y", `${(1 + Math.random() * DECOR.hauteurCiel).toFixed(2)}%`);
-    const brillante = Math.random() < DECOR.partBrillante;
+    const eclat = Math.random() < DECOR.partEclat;
+    const brillante = eclat || Math.random() < DECOR.partBrillante;
     etoile.classList.toggle(CLASSES.etoileBrillante, brillante);
-    etoile.style.setProperty("--eclat", ((brillante ? 0.85 : 0.6) + Math.random() * 0.15).toFixed(2));
-    if (Math.random() < DECOR.partScintillante) {
+    etoile.classList.toggle(CLASSES.etoileEclat, eclat);
+    etoile.style.setProperty("--eclat", ((brillante ? 0.9 : 0.65) + Math.random() * 0.1).toFixed(2));
+    if (eclat || Math.random() < DECOR.partScintillante) {
       etoile.classList.add(CLASSES.etoileScintille);
-      etoile.style.setProperty("--duree", `${(1.6 + Math.random() * 2.4).toFixed(2)}s`);
+      etoile.style.setProperty("--duree", `${(eclat ? 2.4 + Math.random() * 2 : 1.2 + Math.random() * 1.8).toFixed(2)}s`);
       etoile.style.setProperty("--delai", `${(-Math.random() * 4).toFixed(2)}s`);
     }
     conteneur.append(etoile);
   }
+}
+
+function lancerEtoileFilante() {
+  const { filante: reglages } = DECOR;
+  const conteneur = document.querySelector(SELECTEURS.etoiles);
+  const filante = document.createElement("span");
+  const angle = gsap.utils.random(reglages.angleMin, reglages.angleMax);
+  const sens = Math.random() < 0.5 ? 1 : -1;
+  const distance = conteneur.offsetWidth * reglages.distance;
+  const radians = (angle * Math.PI) / 180;
+  filante.className = CLASSES.filante;
+  filante.style.setProperty("--x", `${gsap.utils.random(reglages.gaucheMin, reglages.gaucheMax).toFixed(2)}%`);
+  filante.style.setProperty("--y", `${gsap.utils.random(reglages.hautMin, reglages.hautMax).toFixed(2)}%`);
+  conteneur.append(filante);
+  gsap.set(filante, { xPercent: -100, yPercent: -50, rotation: sens > 0 ? angle : 180 - angle });
+  gsap.timeline({ onComplete: () => filante.remove() })
+    .to(filante, { x: sens * distance * Math.cos(radians), y: distance * Math.sin(radians), duration: reglages.duree, ease: "power1.in" })
+    .fromTo(filante, { opacity: 0 }, { opacity: 1, duration: reglages.duree * 0.2, ease: "none" }, 0)
+    .to(filante, { opacity: 0, duration: reglages.duree * 0.35, ease: "power1.in" }, reglages.duree * 0.65);
+  programmerEtoileFilante(gsap.utils.random(reglages.delaiMin, reglages.delaiMax));
+}
+
+function programmerEtoileFilante(delai) {
+  prochaineFilante?.kill();
+  prochaineFilante = gsap.delayedCall(delai, lancerEtoileFilante);
 }
 
 function animerDecor() {
@@ -432,9 +475,11 @@ medias.add(MEDIAS, (contexte) => {
   }
   if (mouvement) {
     animerDecor();
+    programmerEtoileFilante(DECOR.filante.delaiMin);
     annoncerLesZones();
   }
   return () => {
+    prochaineFilante?.kill();
     chemin.classList.add(CLASSES.cheminDeploye);
     document.querySelectorAll(SELECTEURS.zoneTitre).forEach((titre) => gsap.set(titre, { clearProps: "opacity" }));
   };
