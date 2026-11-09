@@ -4,3 +4,8 @@ moodboard/
 # Fichiers système
 .DS_Store
 Thumbs.db
+
+# Brouillons de conception (esquisses, captures de revue)
+.impeccable/mocks/
+.impeccable/review/
+prototypes/

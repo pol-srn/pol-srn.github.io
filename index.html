@@ -9,7 +9,7 @@
   <link rel="icon" href="assets/images/nav/feu-allume.svg" type="image/svg+xml">
   <link rel="alternate" hreflang="fr" href="./">
   <link rel="alternate" hreflang="en" href="en/">
-  <link rel="preload" href="assets/fonts/unifrakturmaguntia-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/pirata-one-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/schibsted-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/pixelify-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="assets/css/style.css">
@@ -59,9 +59,6 @@
         <a class="chemin__lien" href="#projets"><span class="chemin__nom">Projets</span><span class="chemin__feu"></span></a>
       </li>
       <li class="chemin__etape">
-        <a class="chemin__lien" href="#competences"><span class="chemin__nom">Compétences</span><span class="chemin__feu"></span></a>
-      </li>
-      <li class="chemin__etape">
         <a class="chemin__lien" href="#contact"><span class="chemin__nom">Contact</span><span class="chemin__feu"></span></a>
       </li>
     </ol>
@@ -92,18 +89,119 @@
       </div>
     </section>
 
-    <section class="zone" id="a-propos" aria-labelledby="titre-a-propos">
-      <h2 class="zone__titre" id="titre-a-propos">À propos</h2>
-      <p class="zone__texte">Section en cours de construction.</p>
+    <section class="zone zone--apropos" id="a-propos" aria-labelledby="titre-a-propos">
+      <div class="apropos__decor" aria-hidden="true"></div>
+      <div class="apropos">
+        <h2 class="zone__titre apropos__titre" id="titre-a-propos">À propos</h2>
+
+        <div class="apropos__classes">
+          <p class="apropos__intitule" id="intitule-classes">Spécialité</p>
+          <div class="classes" role="tablist" aria-labelledby="intitule-classes" aria-orientation="vertical">
+            <button class="classes__choix" type="button" role="tab" id="onglet-ensemble" aria-controls="panneau-ensemble" aria-selected="true" data-portrait="assets/images/a-propos/portrait-etudiant.png" data-alt="Portrait pixel art de Paul Siron en sweat bordeaux"><span class="classes__nom">Vue d’ensemble</span><span class="classes__type">Classe : Étudiant</span></button>
+            <button class="classes__choix" type="button" role="tab" id="onglet-interface" aria-controls="panneau-interface" aria-selected="false" tabindex="-1" data-portrait="assets/images/a-propos/portrait-chevalier.png" data-alt="Portrait pixel art de Paul Siron en chevalier, cape bordeaux et armure"><span class="classes__nom">Interface</span><span class="classes__type">Classe : Chevalier</span></button>
+            <button class="classes__choix" type="button" role="tab" id="onglet-graphisme" aria-controls="panneau-graphisme" aria-selected="false" tabindex="-1" data-portrait="assets/images/a-propos/portrait-samourai.png" data-alt="Portrait pixel art de Paul Siron en samouraï, armure laquée noire lacée de rouge"><span class="classes__nom">Graphisme</span><span class="classes__type">Classe : Samouraï</span></button>
+            <button class="classes__choix" type="button" role="tab" id="onglet-audiovisuel" aria-controls="panneau-audiovisuel" aria-selected="false" tabindex="-1" data-portrait="assets/images/a-propos/portrait-sorcier.png" data-alt="Portrait pixel art de Paul Siron en sorcier, cape violette et bâton magique"><span class="classes__nom">Audiovisuel</span><span class="classes__type">Classe : Sorcier</span></button>
+          </div>
+          <p class="apropos__astuce">Flèches du clavier pour parcourir les classes</p>
+        </div>
+
+        <div class="apropos__identite">
+          <div class="apropos__cadre">
+            <img class="apropos__portrait" src="assets/images/a-propos/portrait-etudiant.png" alt="Portrait pixel art de Paul Siron en sweat bordeaux" width="152" height="192">
+          </div>
+          <p class="apropos__nom">Paul Siron</p>
+          <p class="apropos__statut">Étudiant en BUT MMI · Limoges</p>
+          <p class="apropos__dispo">Disponible en stage dès avril 2027</p>
+        </div>
+
+        <div class="apropos__panneau" id="panneau-ensemble" role="tabpanel" aria-labelledby="onglet-ensemble">
+          <h3 class="fiche__nom">Vue d’ensemble</h3>
+          <p class="fiche__type">Classe de départ : Étudiant</p>
+          <dl class="fiche__caracteristiques">
+            <div class="fiche__ligne"><dt>Type</dt><dd>Classe de départ</dd></div>
+            <div class="fiche__ligne"><dt>Domaines</dt><dd>Graphisme · Audiovisuel · UI</dd></div>
+            <div class="fiche__ligne"><dt>Requiert</dt><dd>Polyvalence</dd></div>
+          </dl>
+          <p class="fiche__question">Pourquoi un étudiant ?</p>
+          <p class="fiche__reponse">En BUT MMI, je touche au graphisme, à l’audiovisuel et au design. Choisis une spécialité pour la voir en détail.</p>
+          <h4 class="equipement__titre">Inventaire · centres d’intérêt</h4>
+          <div class="equipement">
+            <ul class="equipement__cases">
+              <li><button class="equipement__case" type="button" aria-pressed="true" data-nom="Trottinette" data-description="Trottinette freestyle depuis 2021 ; je filme et monte mes propres vidéos."><img src="assets/images/a-propos/interet-trottinette.png" alt="Trottinette" width="56" height="56"></button><span class="equipement__legende" aria-hidden="true">Trottinette</span></li>
+              <li><button class="equipement__case" type="button" aria-pressed="false" data-nom="Dessin" data-description="Je dessine depuis 2020, sur papier et sur tablette."><img src="assets/images/a-propos/interet-dessin.png" alt="Dessin" width="56" height="56"></button><span class="equipement__legende" aria-hidden="true">Dessin</span></li>
+              <li><button class="equipement__case" type="button" aria-pressed="false" data-nom="Jeux vidéo" data-description="Elden Ring, Dark Souls, Clair Obscur : Expedition 33, Hollow Knight. Ils inspirent ce site."><img src="assets/images/a-propos/interet-jeux.png" alt="Jeux vidéo" width="56" height="56"></button><span class="equipement__legende" aria-hidden="true">Jeux vidéo</span></li>
+              <li><button class="equipement__case" type="button" aria-pressed="false" data-nom="Musique" data-description="Grand fan de Radiohead et de rock alternatif."><img src="assets/images/a-propos/interet-musique.png" alt="Musique" width="56" height="56"></button><span class="equipement__legende" aria-hidden="true">Musique</span></li>
+            </ul>
+            <p class="equipement__detail" aria-live="polite"><strong>Trottinette</strong> · Trottinette freestyle depuis 2021 ; je filme et monte mes propres vidéos.</p>
+          </div>
+        </div>
+
+        <div class="apropos__panneau" id="panneau-interface" role="tabpanel" aria-labelledby="onglet-interface" hidden>
+          <h3 class="fiche__nom">Design d’interface</h3>
+          <p class="fiche__type">Classe : Chevalier</p>
+          <dl class="fiche__caracteristiques">
+            <div class="fiche__ligne"><dt>Type</dt><dd>Spécialité</dd></div>
+            <div class="fiche__ligne"><dt>Domaine</dt><dd>Maquettes et sites web</dd></div>
+            <div class="fiche__ligne"><dt>Requiert</dt><dd>Sérieux · Curiosité</dd></div>
+          </dl>
+          <p class="fiche__question">Pourquoi un chevalier ?</p>
+          <p class="fiche__reponse">Une interface, c’est une armure : structurée, solide, pensée pour protéger celui qui l’utilise.</p>
+          <h4 class="equipement__titre">Équipement · logiciels</h4>
+          <div class="equipement">
+            <ul class="equipement__cases">
+              <li><button class="equipement__case" type="button" aria-pressed="true" data-nom="Figma" data-description="L’atelier où naissent mes maquettes de sites, de la structure au prototype."><img src="assets/images/a-propos/logiciel-figma.png" alt="Figma" width="56" height="56"></button><span class="equipement__legende" aria-hidden="true">Figma</span></li>
+              <li><button class="equipement__case" type="button" aria-pressed="false" data-nom="HTML" data-description="La structure de mes pages, comme le site one page d’une startup imaginaire."><img src="assets/images/a-propos/logiciel-html.png" alt="HTML" width="56" height="56"></button><span class="equipement__legende" aria-hidden="true">HTML</span></li>
+              <li><button class="equipement__case" type="button" aria-pressed="false" data-nom="CSS" data-description="La mise en forme et l’adaptation de mes pages à tous les écrans."><img src="assets/images/a-propos/logiciel-css.png" alt="CSS" width="56" height="56"></button><span class="equipement__legende" aria-hidden="true">CSS</span></li>
+            </ul>
+            <p class="equipement__detail" aria-live="polite"><strong>Figma</strong> · L’atelier où naissent mes maquettes de sites, de la structure au prototype.</p>
+          </div>
+        </div>
+
+        <div class="apropos__panneau" id="panneau-graphisme" role="tabpanel" aria-labelledby="onglet-graphisme" hidden>
+          <h3 class="fiche__nom">Graphisme</h3>
+          <p class="fiche__type">Classe : Samouraï</p>
+          <dl class="fiche__caracteristiques">
+            <div class="fiche__ligne"><dt>Type</dt><dd>Spécialité</dd></div>
+            <div class="fiche__ligne"><dt>Domaine</dt><dd>Logos, stickers, motifs</dd></div>
+            <div class="fiche__ligne"><dt>Requiert</dt><dd>Précision · Créativité</dd></div>
+          </dl>
+          <p class="fiche__question">Pourquoi un samouraï ?</p>
+          <p class="fiche__reponse">Le samouraï travaille son trait comme sa lame : chaque courbe d’un logo, chaque motif doit être précis et maîtrisé.</p>
+          <h4 class="equipement__titre">Équipement · logiciels</h4>
+          <div class="equipement">
+            <ul class="equipement__cases">
+              <li><button class="equipement__case" type="button" aria-pressed="true" data-nom="Photoshop" data-description="Retouche et création graphique, comme mes stickers sur les soft et hard skills."><img src="assets/images/a-propos/logiciel-photoshop.png" alt="Photoshop" width="56" height="56"></button><span class="equipement__legende" aria-hidden="true">Photoshop</span></li>
+              <li><button class="equipement__case" type="button" aria-pressed="false" data-nom="Illustrator" data-description="Logos et motifs vectoriels, comme ceux d’une appli de voyages interstellaires."><img src="assets/images/a-propos/logiciel-illustrator.png" alt="Illustrator" width="56" height="56"></button><span class="equipement__legende" aria-hidden="true">Illustrator</span></li>
+            </ul>
+            <p class="equipement__detail" aria-live="polite"><strong>Photoshop</strong> · Retouche et création graphique, comme mes stickers sur les soft et hard skills.</p>
+          </div>
+        </div>
+
+        <div class="apropos__panneau" id="panneau-audiovisuel" role="tabpanel" aria-labelledby="onglet-audiovisuel" hidden>
+          <h3 class="fiche__nom">Audiovisuel</h3>
+          <p class="fiche__type">Classe : Sorcier</p>
+          <dl class="fiche__caracteristiques">
+            <div class="fiche__ligne"><dt>Type</dt><dd>Spécialité</dd></div>
+            <div class="fiche__ligne"><dt>Domaine</dt><dd>Reportage, pub, stop motion</dd></div>
+            <div class="fiche__ligne"><dt>Requiert</dt><dd>Patience · Rythme</dd></div>
+          </dl>
+          <p class="fiche__question">Pourquoi un sorcier ?</p>
+          <p class="fiche__reponse">Le montage, c’est de la magie : assembler des images pour faire naître une histoire, jusqu’à animer des objets en stop motion.</p>
+          <h4 class="equipement__titre">Équipement · logiciels</h4>
+          <div class="equipement">
+            <ul class="equipement__cases">
+              <li><button class="equipement__case" type="button" aria-pressed="true" data-nom="DaVinci Resolve" data-description="Montage et étalonnage de mes vidéos."><img src="assets/images/a-propos/logiciel-davinci.png" alt="DaVinci Resolve" width="56" height="56"></button><span class="equipement__legende" aria-hidden="true">DaVinci Resolve</span></li>
+              <li><button class="equipement__case" type="button" aria-pressed="false" data-nom="CapCut" data-description="Montage rapide des formats courts."><img src="assets/images/a-propos/logiciel-capcut.png" alt="CapCut" width="56" height="56"></button><span class="equipement__legende" aria-hidden="true">CapCut</span></li>
+              <li><button class="equipement__case" type="button" aria-pressed="false" data-nom="Premiere Pro" data-description="Le montage d’un reportage et d’une pub fictive."><img src="assets/images/a-propos/logiciel-premiere.png" alt="Premiere Pro" width="56" height="56"></button><span class="equipement__legende" aria-hidden="true">Premiere Pro</span></li>
+            </ul>
+            <p class="equipement__detail" aria-live="polite"><strong>DaVinci Resolve</strong> · Montage et étalonnage de mes vidéos.</p>
+          </div>
+        </div>
+      </div>
     </section>
 
     <section class="zone" id="projets" aria-labelledby="titre-projets">
       <h2 class="zone__titre" id="titre-projets">Projets</h2>
-      <p class="zone__texte">Section en cours de construction.</p>
-    </section>
-
-    <section class="zone" id="competences" aria-labelledby="titre-competences">
-      <h2 class="zone__titre" id="titre-competences">Compétences</h2>
       <p class="zone__texte">Section en cours de construction.</p>
     </section>
 

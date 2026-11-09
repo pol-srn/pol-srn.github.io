@@ -9,7 +9,7 @@
   <link rel="icon" href="../assets/images/nav/feu-allume.svg" type="image/svg+xml">
   <link rel="alternate" hreflang="fr" href="../">
   <link rel="alternate" hreflang="en" href="./">
-  <link rel="preload" href="../assets/fonts/unifrakturmaguntia-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../assets/fonts/pirata-one-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="../assets/fonts/schibsted-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="../assets/fonts/pixelify-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="../assets/css/style.css">
@@ -59,9 +59,6 @@
         <a class="chemin__lien" href="#projects"><span class="chemin__nom">Projects</span><span class="chemin__feu"></span></a>
       </li>
       <li class="chemin__etape">
-        <a class="chemin__lien" href="#skills"><span class="chemin__nom">Skills</span><span class="chemin__feu"></span></a>
-      </li>
-      <li class="chemin__etape">
         <a class="chemin__lien" href="#contact"><span class="chemin__nom">Contact</span><span class="chemin__feu"></span></a>
       </li>
     </ol>
@@ -92,18 +89,119 @@
       </div>
     </section>
 
-    <section class="zone" id="about" aria-labelledby="title-about">
-      <h2 class="zone__titre" id="title-about">About</h2>
-      <p class="zone__texte">This section is under construction.</p>
+    <section class="zone zone--apropos" id="about" aria-labelledby="title-about">
+      <div class="apropos__decor" aria-hidden="true"></div>
+      <div class="apropos">
+        <h2 class="zone__titre apropos__titre" id="title-about">About</h2>
+
+        <div class="apropos__classes">
+          <p class="apropos__intitule" id="class-heading">Specialty</p>
+          <div class="classes" role="tablist" aria-labelledby="class-heading" aria-orientation="vertical">
+            <button class="classes__choix" type="button" role="tab" id="tab-overview" aria-controls="panel-overview" aria-selected="true" data-portrait="../assets/images/a-propos/portrait-etudiant.png" data-alt="Pixel art portrait of Paul Siron in a burgundy hoodie"><span class="classes__nom">Overview</span><span class="classes__type">Class: Student</span></button>
+            <button class="classes__choix" type="button" role="tab" id="tab-interface" aria-controls="panel-interface" aria-selected="false" tabindex="-1" data-portrait="../assets/images/a-propos/portrait-chevalier.png" data-alt="Pixel art portrait of Paul Siron as a knight, burgundy cape and armour"><span class="classes__nom">Interface</span><span class="classes__type">Class: Knight</span></button>
+            <button class="classes__choix" type="button" role="tab" id="tab-graphic" aria-controls="panel-graphic" aria-selected="false" tabindex="-1" data-portrait="../assets/images/a-propos/portrait-samourai.png" data-alt="Pixel art portrait of Paul Siron as a samurai, black lacquered armour laced in red"><span class="classes__nom">Graphic design</span><span class="classes__type">Class: Samurai</span></button>
+            <button class="classes__choix" type="button" role="tab" id="tab-video" aria-controls="panel-video" aria-selected="false" tabindex="-1" data-portrait="../assets/images/a-propos/portrait-sorcier.png" data-alt="Pixel art portrait of Paul Siron as a sorcerer, purple cloak and magic staff"><span class="classes__nom">Video</span><span class="classes__type">Class: Sorcerer</span></button>
+          </div>
+          <p class="apropos__astuce">Use the arrow keys to browse the classes</p>
+        </div>
+
+        <div class="apropos__identite">
+          <div class="apropos__cadre">
+            <img class="apropos__portrait" src="../assets/images/a-propos/portrait-etudiant.png" alt="Pixel art portrait of Paul Siron in a burgundy hoodie" width="152" height="192">
+          </div>
+          <p class="apropos__nom">Paul Siron</p>
+          <p class="apropos__statut">BUT MMI student · Limoges, France</p>
+          <p class="apropos__dispo">Available for an internship from April 2027</p>
+        </div>
+
+        <div class="apropos__panneau" id="panel-overview" role="tabpanel" aria-labelledby="tab-overview">
+          <h3 class="fiche__nom">Overview</h3>
+          <p class="fiche__type">Starting class: Student</p>
+          <dl class="fiche__caracteristiques">
+            <div class="fiche__ligne"><dt>Type</dt><dd>Starting class</dd></div>
+            <div class="fiche__ligne"><dt>Fields</dt><dd>Graphic design · Video · UI</dd></div>
+            <div class="fiche__ligne"><dt>Requires</dt><dd>Versatility</dd></div>
+          </dl>
+          <p class="fiche__question">Why a student?</p>
+          <p class="fiche__reponse">My multimedia degree covers graphic design, video and UI design. Pick a specialty to see it in detail.</p>
+          <h4 class="equipement__titre">Inventory · interests</h4>
+          <div class="equipement">
+            <ul class="equipement__cases">
+              <li><button class="equipement__case" type="button" aria-pressed="true" data-nom="Scooter" data-description="Freestyle scooter since 2021; I film and edit my own videos."><img src="../assets/images/a-propos/interet-trottinette.png" alt="Scooter" width="56" height="56"></button><span class="equipement__legende" aria-hidden="true">Scooter</span></li>
+              <li><button class="equipement__case" type="button" aria-pressed="false" data-nom="Drawing" data-description="Drawing since 2020, on paper and on a tablet."><img src="../assets/images/a-propos/interet-dessin.png" alt="Drawing" width="56" height="56"></button><span class="equipement__legende" aria-hidden="true">Drawing</span></li>
+              <li><button class="equipement__case" type="button" aria-pressed="false" data-nom="Video games" data-description="Elden Ring, Dark Souls, Clair Obscur: Expedition 33, Hollow Knight. They inspired this site."><img src="../assets/images/a-propos/interet-jeux.png" alt="Video games" width="56" height="56"></button><span class="equipement__legende" aria-hidden="true">Video games</span></li>
+              <li><button class="equipement__case" type="button" aria-pressed="false" data-nom="Music" data-description="A big fan of Radiohead and alternative rock."><img src="../assets/images/a-propos/interet-musique.png" alt="Music" width="56" height="56"></button><span class="equipement__legende" aria-hidden="true">Music</span></li>
+            </ul>
+            <p class="equipement__detail" aria-live="polite"><strong>Scooter</strong> · Freestyle scooter since 2021; I film and edit my own videos.</p>
+          </div>
+        </div>
+
+        <div class="apropos__panneau" id="panel-interface" role="tabpanel" aria-labelledby="tab-interface" hidden>
+          <h3 class="fiche__nom">Interface design</h3>
+          <p class="fiche__type">Class: Knight</p>
+          <dl class="fiche__caracteristiques">
+            <div class="fiche__ligne"><dt>Type</dt><dd>Specialty</dd></div>
+            <div class="fiche__ligne"><dt>Field</dt><dd>Mockups and websites</dd></div>
+            <div class="fiche__ligne"><dt>Requires</dt><dd>Rigour · Curiosity</dd></div>
+          </dl>
+          <p class="fiche__question">Why a knight?</p>
+          <p class="fiche__reponse">An interface is a suit of armour: structured, solid, built to protect the person using it.</p>
+          <h4 class="equipement__titre">Equipment · software</h4>
+          <div class="equipement">
+            <ul class="equipement__cases">
+              <li><button class="equipement__case" type="button" aria-pressed="true" data-nom="Figma" data-description="The workshop where my website mockups take shape, from structure to prototype."><img src="../assets/images/a-propos/logiciel-figma.png" alt="Figma" width="56" height="56"></button><span class="equipement__legende" aria-hidden="true">Figma</span></li>
+              <li><button class="equipement__case" type="button" aria-pressed="false" data-nom="HTML" data-description="The structure of my pages, like a one-page site for an imaginary startup."><img src="../assets/images/a-propos/logiciel-html.png" alt="HTML" width="56" height="56"></button><span class="equipement__legende" aria-hidden="true">HTML</span></li>
+              <li><button class="equipement__case" type="button" aria-pressed="false" data-nom="CSS" data-description="Styling my pages and adapting them to every screen."><img src="../assets/images/a-propos/logiciel-css.png" alt="CSS" width="56" height="56"></button><span class="equipement__legende" aria-hidden="true">CSS</span></li>
+            </ul>
+            <p class="equipement__detail" aria-live="polite"><strong>Figma</strong> · The workshop where my website mockups take shape, from structure to prototype.</p>
+          </div>
+        </div>
+
+        <div class="apropos__panneau" id="panel-graphic" role="tabpanel" aria-labelledby="tab-graphic" hidden>
+          <h3 class="fiche__nom">Graphic design</h3>
+          <p class="fiche__type">Class: Samurai</p>
+          <dl class="fiche__caracteristiques">
+            <div class="fiche__ligne"><dt>Type</dt><dd>Specialty</dd></div>
+            <div class="fiche__ligne"><dt>Field</dt><dd>Logos, stickers, patterns</dd></div>
+            <div class="fiche__ligne"><dt>Requires</dt><dd>Precision · Creativity</dd></div>
+          </dl>
+          <p class="fiche__question">Why a samurai?</p>
+          <p class="fiche__reponse">A samurai works his line like his blade: every curve of a logo, every pattern has to be precise and controlled.</p>
+          <h4 class="equipement__titre">Equipment · software</h4>
+          <div class="equipement">
+            <ul class="equipement__cases">
+              <li><button class="equipement__case" type="button" aria-pressed="true" data-nom="Photoshop" data-description="Retouching and graphic creation, like my stickers about soft and hard skills."><img src="../assets/images/a-propos/logiciel-photoshop.png" alt="Photoshop" width="56" height="56"></button><span class="equipement__legende" aria-hidden="true">Photoshop</span></li>
+              <li><button class="equipement__case" type="button" aria-pressed="false" data-nom="Illustrator" data-description="Vector logos and patterns, like those for an interstellar travel app."><img src="../assets/images/a-propos/logiciel-illustrator.png" alt="Illustrator" width="56" height="56"></button><span class="equipement__legende" aria-hidden="true">Illustrator</span></li>
+            </ul>
+            <p class="equipement__detail" aria-live="polite"><strong>Photoshop</strong> · Retouching and graphic creation, like my stickers about soft and hard skills.</p>
+          </div>
+        </div>
+
+        <div class="apropos__panneau" id="panel-video" role="tabpanel" aria-labelledby="tab-video" hidden>
+          <h3 class="fiche__nom">Video</h3>
+          <p class="fiche__type">Class: Sorcerer</p>
+          <dl class="fiche__caracteristiques">
+            <div class="fiche__ligne"><dt>Type</dt><dd>Specialty</dd></div>
+            <div class="fiche__ligne"><dt>Field</dt><dd>Reports, ads, stop motion</dd></div>
+            <div class="fiche__ligne"><dt>Requires</dt><dd>Patience · Rhythm</dd></div>
+          </dl>
+          <p class="fiche__question">Why a sorcerer?</p>
+          <p class="fiche__reponse">Editing is a kind of magic: putting images together until a story appears, even bringing still objects to life in stop motion.</p>
+          <h4 class="equipement__titre">Equipment · software</h4>
+          <div class="equipement">
+            <ul class="equipement__cases">
+              <li><button class="equipement__case" type="button" aria-pressed="true" data-nom="DaVinci Resolve" data-description="Editing and colour grading my videos."><img src="../assets/images/a-propos/logiciel-davinci.png" alt="DaVinci Resolve" width="56" height="56"></button><span class="equipement__legende" aria-hidden="true">DaVinci Resolve</span></li>
+              <li><button class="equipement__case" type="button" aria-pressed="false" data-nom="CapCut" data-description="Quick edits for short formats."><img src="../assets/images/a-propos/logiciel-capcut.png" alt="CapCut" width="56" height="56"></button><span class="equipement__legende" aria-hidden="true">CapCut</span></li>
+              <li><button class="equipement__case" type="button" aria-pressed="false" data-nom="Premiere Pro" data-description="Editing a report and a fictional ad."><img src="../assets/images/a-propos/logiciel-premiere.png" alt="Premiere Pro" width="56" height="56"></button><span class="equipement__legende" aria-hidden="true">Premiere Pro</span></li>
+            </ul>
+            <p class="equipement__detail" aria-live="polite"><strong>DaVinci Resolve</strong> · Editing and colour grading my videos.</p>
+          </div>
+        </div>
+      </div>
     </section>
 
     <section class="zone" id="projects" aria-labelledby="title-projects">
       <h2 class="zone__titre" id="title-projects">Projects</h2>
-      <p class="zone__texte">This section is under construction.</p>
-    </section>
-
-    <section class="zone" id="skills" aria-labelledby="title-skills">
-      <h2 class="zone__titre" id="title-skills">Skills</h2>
       <p class="zone__texte">This section is under construction.</p>
     </section>
 

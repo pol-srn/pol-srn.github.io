@@ -1,8 +1,7 @@
 const CHARGEMENT = {
-  dureeMinimale: 4.8,
-  delaiChute: 0.3,
-  dureeChute: 2.2,
-  progressionImpact: 0.25,
+  dureeMinimale: 2.8,
+  delaiChute: 0.15,
+  dureeChute: 1.6,
   hauteurApparition: 16,
   pointImpact: 0.8,
   courbeChute: "power2.in",
@@ -13,13 +12,13 @@ const CHARGEMENT = {
   dureeAllumage: 0.9,
   opaciteLueur: 0.75,
   dureeApparitionLueur: 0.8,
-  dureeRemplissage: 0.4,
-  dureeEmbrasement: 1,
+  dureeRemplissage: 0.3,
+  dureeEmbrasement: 0.6,
   agrandissementLueur: 3,
-  dureeEclat: 0.8,
+  dureeEclat: 0.5,
   rayonEclatDepart: "150vmax",
   rayonEclatFin: "9vmax",
-  dureeResserrement: 2,
+  dureeResserrement: 1.1,
   dureeFonduSimple: 0.4
 };
 
@@ -66,6 +65,24 @@ const NAVIGATION = {
   dureeGlissement: 0.7
 };
 
+const APPARITION = {
+  decalage: 24,
+  duree: 0.6,
+  ecart: 0.08,
+  courbe: "power3.out"
+};
+
+const AJUSTEMENT = {
+  delaiRedimensionnement: 150,
+  largeurReference: 1520
+};
+
+const ONGLETS = {
+  dureeFondu: 0.3,
+  courbeFondu: "power1.out",
+  touches: { precedent: ["ArrowUp", "ArrowLeft"], suivant: ["ArrowDown", "ArrowRight"], premier: ["Home"], dernier: ["End"] }
+};
+
 const SELECTEURS = {
   chargement: ".chargement",
   chargementFeu: ".chargement__feu",
@@ -95,7 +112,16 @@ const SELECTEURS = {
   annonceFilet: ".annonce__filet",
   annonceSousTitre: ".annonce__sous-titre",
   zone: ".zone",
-  zoneTitre: ".zone__titre"
+  zoneTitre: ".zone__titre",
+  onglets: ".classes",
+  onglet: ".classes__choix",
+  portrait: ".apropos__portrait",
+  panneau: ".apropos__panneau",
+  equipement: ".equipement",
+  caseObjet: ".equipement__case",
+  detailObjet: ".equipement__detail",
+  ajustable: ".apropos",
+  contenuZone: ".zone__texte, .apropos__classes, .apropos__identite, .apropos__panneau:not([hidden])"
 };
 
 const CLASSES = {
@@ -112,6 +138,7 @@ const CLASSES = {
 
 const MEDIAS = {
   ordinateur: "(min-width: 48rem)",
+  ajustement: "(min-width: 64rem)",
   mouvement: "(prefers-reduced-motion: no-preference)"
 };
 
@@ -171,6 +198,7 @@ function suivreChargement(surProgression) {
 function terminerChargement(ecran) {
   ecran.remove();
   document.documentElement.classList.remove(CLASSES.chargementActif);
+  ajusterContenus();
   ScrollTrigger.refresh();
 }
 
@@ -235,11 +263,7 @@ function lancerChargement() {
 
   feuChargement.demarrer("eteint");
 
-  const tempsImpact = CHARGEMENT.delaiChute + CHARGEMENT.dureeChute;
-  const attenteTemps = gsap.timeline({ onUpdate: afficherProgression })
-    .to(minuteur, { progression: CHARGEMENT.progressionImpact, duration: tempsImpact, ease: "none" })
-    .to(minuteur, { progression: 1, duration: CHARGEMENT.dureeMinimale - tempsImpact, ease: "power1.inOut" })
-    .then();
+  const attenteTemps = gsap.to(minuteur, { progression: 1, duration: CHARGEMENT.dureeMinimale, ease: "none", onUpdate: afficherProgression }).then();
 
   const attenteAllumage = faireTomberEtincelles(feuElement, () => {
     feuChargement.allumer(CHARGEMENT.dureeAllumage);
@@ -403,9 +427,12 @@ function transformerNavigation(avecMouvement) {
 }
 
 function reveler(titre) {
-  if (titre) {
-    gsap.set(titre, { opacity: 1 });
+  if (!titre) {
+    return;
   }
+  gsap.set(titre, { opacity: 1 });
+  const contenu = titre.closest(SELECTEURS.zone).querySelectorAll(SELECTEURS.contenuZone);
+  gsap.to(contenu, { autoAlpha: 1, y: 0, duration: APPARITION.duree, stagger: APPARITION.ecart, ease: APPARITION.courbe, overwrite: true, clearProps: "transform" });
 }
 
 function annoncerZone(zone) {
@@ -441,7 +468,10 @@ function annoncerZone(zone) {
 
 function annoncerLesZones() {
   document.querySelectorAll(SELECTEURS.zone).forEach((zone) => {
-    gsap.set(zone.querySelector(SELECTEURS.zoneTitre), { opacity: 0 });
+    if (!zonesDecouvertes.has(zone.id)) {
+      gsap.set(zone.querySelector(SELECTEURS.zoneTitre), { opacity: 0 });
+      gsap.set(zone.querySelectorAll(SELECTEURS.contenuZone), { autoAlpha: 0, y: APPARITION.decalage });
+    }
     ScrollTrigger.create({
       trigger: zone,
       start: NAVIGATION.debutZone,
@@ -455,7 +485,115 @@ function annoncerLesZones() {
   });
 }
 
+function activerOnglet(boutons, bouton, portrait, avecFocus) {
+  boutons.forEach((autre) => {
+    const actif = autre === bouton;
+    autre.setAttribute("aria-selected", actif);
+    autre.tabIndex = actif ? 0 : -1;
+    document.getElementById(autre.getAttribute("aria-controls")).hidden = !actif;
+  });
+  if (avecFocus) {
+    bouton.focus();
+  }
+  portrait.src = bouton.dataset.portrait;
+  portrait.alt = bouton.dataset.alt;
+  if (mouvementAutorise) {
+    const panneau = document.getElementById(bouton.getAttribute("aria-controls"));
+    gsap.fromTo([portrait, panneau], { opacity: 0 }, { opacity: 1, duration: ONGLETS.dureeFondu, ease: ONGLETS.courbeFondu });
+  }
+}
+
+function initialiserOnglets() {
+  const liste = document.querySelector(SELECTEURS.onglets);
+  if (!liste) {
+    return;
+  }
+  const boutons = [...liste.querySelectorAll(SELECTEURS.onglet)];
+  const portrait = document.querySelector(SELECTEURS.portrait);
+  boutons.forEach((bouton) => {
+    new Image().src = bouton.dataset.portrait;
+    bouton.addEventListener("click", () => {
+      if (bouton.getAttribute("aria-selected") !== "true") {
+        activerOnglet(boutons, bouton, portrait, false);
+      }
+    });
+  });
+  liste.addEventListener("keydown", (evenement) => {
+    const courant = boutons.indexOf(document.activeElement);
+    const positions = {
+      precedent: (courant - 1 + boutons.length) % boutons.length,
+      suivant: (courant + 1) % boutons.length,
+      premier: 0,
+      dernier: boutons.length - 1
+    };
+    const action = Object.keys(ONGLETS.touches).find((nom) => ONGLETS.touches[nom].includes(evenement.key));
+    if (courant < 0 || !action) {
+      return;
+    }
+    evenement.preventDefault();
+    activerOnglet(boutons, boutons[positions[action]], portrait, true);
+  });
+}
+
+function choisirObjet(cases, choisie, detail) {
+  cases.forEach((uneCase) => uneCase.setAttribute("aria-pressed", uneCase === choisie));
+  const nom = document.createElement("strong");
+  nom.textContent = choisie.dataset.nom;
+  detail.replaceChildren(nom, ` · ${choisie.dataset.description}`);
+}
+
+function initialiserObjets() {
+  document.querySelectorAll(SELECTEURS.equipement).forEach((equipement) => {
+    const cases = [...equipement.querySelectorAll(SELECTEURS.caseObjet)];
+    const detail = equipement.querySelector(SELECTEURS.detailObjet);
+    cases.forEach((uneCase) => {
+      ["click", "focus", "mouseenter"].forEach((type) => {
+        uneCase.addEventListener(type, () => choisirObjet(cases, uneCase, detail));
+      });
+    });
+  });
+}
+
+function ajusterContenus() {
+  document.querySelectorAll(SELECTEURS.ajustable).forEach((bloc) => {
+    bloc.style.setProperty("--echelle", 1);
+    bloc.style.removeProperty("--hauteur-panneau");
+    if (!window.matchMedia(MEDIAS.ajustement).matches) {
+      return;
+    }
+    const panneaux = [...bloc.querySelectorAll(SELECTEURS.panneau)];
+    const masques = panneaux.map((panneau) => panneau.hidden);
+    let hauteurPanneau = 0;
+    panneaux.forEach((panneau) => {
+      panneaux.forEach((autre) => { autre.hidden = autre !== panneau; });
+      hauteurPanneau = Math.max(hauteurPanneau, panneau.offsetHeight);
+    });
+    bloc.style.setProperty("--hauteur-panneau", `${hauteurPanneau}px`);
+    panneaux.forEach((panneau, i) => { panneau.hidden = masques[i]; });
+    const echelleLargeur = document.documentElement.clientWidth / AJUSTEMENT.largeurReference;
+    const bordure = parseFloat(getComputedStyle(bloc.closest(SELECTEURS.zone)).borderTopWidth);
+    const echelleHauteur = (window.innerHeight - bordure) / bloc.offsetHeight;
+    bloc.style.setProperty("--echelle", (Math.floor(Math.min(echelleLargeur, echelleHauteur) * 1000) / 1000).toString());
+  });
+}
+
+function suivreRedimensionnement() {
+  let minuteur = null;
+  window.addEventListener("resize", () => {
+    clearTimeout(minuteur);
+    minuteur = setTimeout(() => {
+      ajusterContenus();
+      ScrollTrigger.refresh();
+    }, AJUSTEMENT.delaiRedimensionnement);
+  });
+}
+
 creerEtoiles();
+initialiserOnglets();
+initialiserObjets();
+ajusterContenus();
+document.fonts.ready.then(ajusterContenus);
+suivreRedimensionnement();
 if (mouvementAutorise) {
   feuHero.demarrer("allume");
 } else {
@@ -482,5 +620,6 @@ medias.add(MEDIAS, (contexte) => {
     prochaineFilante?.kill();
     chemin.classList.add(CLASSES.cheminDeploye);
     document.querySelectorAll(SELECTEURS.zoneTitre).forEach((titre) => gsap.set(titre, { clearProps: "opacity" }));
+    gsap.set(document.querySelectorAll(SELECTEURS.contenuZone), { clearProps: "opacity,visibility,transform" });
   };
 });
