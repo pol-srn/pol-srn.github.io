@@ -77,9 +77,61 @@ const AJUSTEMENT = {
   largeurReference: 1520
 };
 
+const TRANSITION = {
+  duree: 2.2,
+  courbe: "power2.inOut",
+  repos: 700,
+  seuilTactile: 30,
+  grille: { largeur: 816, hauteur: 452 },
+  arrivee: { x: 376.75, y: 126, largeur: 109.525, hauteur: 60.645 },
+  luneArrivee: { x: 1344, y: 215, rayon: 112 },
+  detourage: {
+    marge: 230,
+    fonduBas: 0.22,
+    fonduCotes: 0.06,
+    pointe: { gauche: 893, droite: 993, hauteur: 216, pixel: 6, couleurs: ["#0b1a29", "#23415c", "#3e677e"] }
+  },
+  calques: [
+    { cible: ".hero__calque--ciel", profondeur: 0.45, plan: "fond", etoiles: true },
+    { cible: ".hero__calque--montagne", profondeur: 1, plan: "fond" },
+    { cible: ".hero__calque--brume-loin", profondeur: 1.04, plan: "devant", fondu: [0.55, 0.85] },
+    { cible: ".hero__calque--foret-loin", profondeur: 1.08, plan: "devant", fondu: [0.5, 0.82] },
+    { cible: ".hero__calque--brume-proche", profondeur: 1.15, plan: "devant", fondu: [0.45, 0.8] },
+    { cible: ".hero__calque--foret-proche", profondeur: 1.35, plan: "devant", fondu: [0.3, 0.65] },
+    { cible: ".hero__calque--arcade", profondeur: 1.3, plan: "devant", fondu: [0.55, 0.8] },
+    { cible: ".hero__feu", profondeur: 1.3, plan: "devant", fondu: [0.25, 0.55] }
+  ],
+  html: [
+    { cible: ".hero__contenu", profondeur: 1.3, fondu: [0, 0.45] },
+    { cible: ".hero__halo", profondeur: 1.3, fondu: [0, 0.35] },
+    { cible: ".hero__lune", profondeur: 1, fondu: [0.2, 0.5] },
+    { cible: ".hero__vignette", profondeur: 1, fondu: [0, 0.5] }
+  ],
+  revelation: [0.04, 0.3],
+  cielArrivee: [0.72, 0.95],
+  bordsNets: [0.97, 1],
+  bordAdouci: 0.14,
+  dureeVoile: 0.3,
+  dureeVoileDecor: 0.8,
+  touchesBas: ["ArrowDown", "PageDown", " "],
+  touchesHaut: ["ArrowUp", "PageUp", "Home"]
+};
+
 const ONGLETS = {
   dureeFondu: 0.3,
   courbeFondu: "power1.out",
+  or: {
+    entree: 0.45,
+    sortie: 0.6,
+    ondulation: 4,
+    largeur: 152,
+    hauteur: 192,
+    debordement: 16,
+    vagues: [{ amplitude: 9, frequence: 0.09 }, { amplitude: 4, frequence: 0.21 }],
+    pincement: 10,
+    halo: 7,
+    couleurs: { coeur: [255, 247, 214], clair: [255, 233, 160], vif: [245, 204, 90], or: [224, 168, 46], ride: [199, 146, 42], halo: [184, 134, 11] }
+  },
   touches: { precedent: ["ArrowUp", "ArrowLeft"], suivant: ["ArrowDown", "ArrowRight"], premier: ["Home"], dernier: ["End"] }
 };
 
@@ -94,7 +146,14 @@ const SELECTEURS = {
   chargementScene: ".chargement__scene",
   chargementEclat: ".chargement__eclat",
   hero: ".hero",
+  heroScene: ".hero__scene",
+  heroCamera: ".hero__camera",
   heroFeu: ".hero__feu",
+  zoneApropos: "#a-propos",
+  decorApropos: ".apropos__decor",
+  lienApropos: "a[href='#a-propos']",
+  lienAccueil: "a[href='#accueil']",
+  tablist: "[role='tablist']",
   halo: ".hero__halo",
   etoiles: ".hero__etoiles",
   brumeLoin: ".hero__calque--brume-loin",
@@ -116,6 +175,7 @@ const SELECTEURS = {
   onglets: ".classes",
   onglet: ".classes__choix",
   portrait: ".apropos__portrait",
+  orPortrait: ".apropos__or",
   panneau: ".apropos__panneau",
   equipement: ".equipement",
   caseObjet: ".equipement__case",
@@ -133,7 +193,8 @@ const CLASSES = {
   etoileScintille: "hero__etoile--scintille",
   etoileBrillante: "hero__etoile--brillante",
   etoileEclat: "hero__etoile--eclat",
-  filante: "hero__filante"
+  filante: "hero__filante",
+  heroPassage: "hero--passage"
 };
 
 const MEDIAS = {
@@ -156,7 +217,12 @@ const annonceTitre = document.querySelector(SELECTEURS.annonceTitre);
 const zonesDecouvertes = new Set();
 const feuHero = creerFeu(document.querySelector(SELECTEURS.heroFeu), REGLAGES_FEU.hero);
 let indexActif = 0;
+let enTransition = false;
+let reposJusqua = 0;
+let derivesBrume = [];
+let zoneDifferee = null;
 let animationAnnonce = null;
+let animationPortrait = null;
 let titreEnAttente = null;
 let prochaineFilante = null;
 
@@ -353,8 +419,10 @@ function animerDecor() {
   Object.entries(DECOR.parallaxe).forEach(([cible, decalage]) => {
     gsap.to(cible, { yPercent: decalage, ease: "none", scrollTrigger: { trigger: hero, start: "top top", end: "bottom top", scrub: true } });
   });
-  gsap.fromTo(SELECTEURS.brumeLoin, { xPercent: -DECOR.derivBrumeLoin, scale: 1.03 }, { xPercent: DECOR.derivBrumeLoin, scale: 1.03, duration: DECOR.dureeBrumeLoin, ease: "sine.inOut", repeat: -1, yoyo: true });
-  gsap.fromTo(SELECTEURS.brumeProche, { xPercent: DECOR.derivBrumeProche, scale: 1.05, opacity: 0.85 }, { xPercent: -DECOR.derivBrumeProche, scale: 1.05, opacity: 1, duration: DECOR.dureeBrumeProche, ease: "sine.inOut", repeat: -1, yoyo: true });
+  derivesBrume = [
+    gsap.fromTo(SELECTEURS.brumeLoin, { xPercent: -DECOR.derivBrumeLoin, scale: 1.03 }, { xPercent: DECOR.derivBrumeLoin, scale: 1.03, duration: DECOR.dureeBrumeLoin, ease: "sine.inOut", repeat: -1, yoyo: true }),
+    gsap.fromTo(SELECTEURS.brumeProche, { xPercent: DECOR.derivBrumeProche, scale: 1.05, opacity: 0.85 }, { xPercent: -DECOR.derivBrumeProche, scale: 1.05, opacity: 1, duration: DECOR.dureeBrumeProche, ease: "sine.inOut", repeat: -1, yoyo: true })
+  ];
   gsap.to(SELECTEURS.halo, { opacity: () => gsap.utils.random(0.6, 1), duration: () => gsap.utils.random(0.12, 0.35), ease: "sine.inOut", repeat: -1, repeatRefresh: true });
 }
 
@@ -426,6 +494,337 @@ function transformerNavigation(avecMouvement) {
   ScrollTrigger.create({ trigger: hero, start: NAVIGATION.seuilRepli, onEnter: replier, onLeaveBack: deployer });
 }
 
+// Accueil -> À propos : une seule image continue. Le décor du hero est redessiné sur sa grille de pixels
+// (816×452), l'image d'arrivée se révèle en haute résolution à l'emplacement du château, une seule lune glisse.
+function lisser(debut, fin, valeur) {
+  const t = gsap.utils.clamp(0, 1, (valeur - debut) / (fin - debut));
+  return t * t * (3 - 2 * t);
+}
+
+function creerToile(largeur, hauteur) {
+  const toile = document.createElement("canvas");
+  toile.width = largeur;
+  toile.height = hauteur;
+  return toile;
+}
+
+function chargerImage(source) {
+  return new Promise((resoudre, rejeter) => {
+    const image = new Image();
+    image.onload = () => resoudre(image);
+    image.onerror = rejeter;
+    image.src = source;
+  });
+}
+
+async function preparerRessources(decor) {
+  const { grille, luneArrivee, detourage } = TRANSITION;
+  const arrivee = await chargerImage(getComputedStyle(decor).backgroundImage.match(/url\("?(.*?)"?\)/)[1]);
+  const largeurA = arrivee.naturalWidth, hauteurA = arrivee.naturalHeight;
+  const arriveeNette = creerToile(largeurA, hauteurA);
+  const contexteNette = arriveeNette.getContext("2d");
+  contexteNette.drawImage(arrivee, 0, 0);
+  const pixelsA = contexteNette.getImageData(0, 0, largeurA, hauteurA);
+
+  // Pendant le zoom, le ciel de l'image est retiré : on garde le château, le rocher et la lune
+  // (déjà réduits au même endroit dans le hero), avec la pointe de la flèche au-dessus de l'image
+  // et un rocher qui se fond dans la montagne du hero.
+  const { marge, pointe, fonduBas, fonduCotes } = detourage;
+  const arriveeDetouree = creerToile(largeurA, hauteurA + marge);
+  const contexteDetouree = arriveeDetouree.getContext("2d");
+  const pixelsD = contexteDetouree.createImageData(largeurA, hauteurA + marge);
+  for (let y = 0; y < hauteurA; y++) {
+    for (let x = 0; x < largeurA; x++) {
+      const i = (y * largeurA + x) * 4;
+      const [r, v, b] = pixelsA.data.subarray(i, i + 3);
+      const etoile = r > 150 && v > 150 && b > 150 && Math.hypot(x - luneArrivee.x, y - luneArrivee.y) > luneArrivee.rayon + 4;
+      const ciel = etoile || (r <= 6 && b >= v + 12) || (x < 520 && y > 700 && r <= 30 && b >= v + 12);
+      if (ciel) continue;
+      const fondu = lisser(0, 1, (1 - y / hauteurA) / fonduBas) * lisser(0, 1, Math.min(x, largeurA - x) / largeurA / fonduCotes);
+      const j = ((y + marge) * largeurA + x) * 4;
+      pixelsD.data.set(pixelsA.data.subarray(i, i + 3), j);
+      pixelsD.data[j + 3] = Math.round(255 * fondu);
+    }
+  }
+  contexteDetouree.putImageData(pixelsD, 0, 0);
+  const milieu = (pointe.gauche + pointe.droite) / 2;
+  for (let y = 0; y < pointe.hauteur; y += pointe.pixel) {
+    const demi = (pointe.droite - pointe.gauche) / 2 * (y + pointe.pixel) / pointe.hauteur;
+    for (let x = Math.round((milieu - demi) / pointe.pixel) * pointe.pixel; x < milieu + demi; x += pointe.pixel) {
+      const bordDroit = x + pointe.pixel >= milieu + demi;
+      contexteDetouree.fillStyle = bordDroit ? pointe.couleurs[2] : x >= milieu ? pointe.couleurs[1] : pointe.couleurs[0];
+      contexteDetouree.fillRect(x, marge - pointe.hauteur + y, pointe.pixel, pointe.pixel);
+    }
+  }
+
+  // Le ciel complet de l'image arrive en fondu à la fin, bords adoucis.
+  const arriveeAdoucie = creerToile(largeurA, hauteurA);
+  const pixelsAdoucis = new ImageData(new Uint8ClampedArray(pixelsA.data), largeurA, hauteurA);
+  for (let y = 0; y < hauteurA; y++) {
+    for (let x = 0; x < largeurA; x++) {
+      const bord = Math.min(x / largeurA, 1 - x / largeurA, y / hauteurA, 1 - y / hauteurA) / TRANSITION.bordAdouci;
+      pixelsAdoucis.data[(y * largeurA + x) * 4 + 3] = Math.round(255 * lisser(0, 1, bord));
+    }
+  }
+  arriveeAdoucie.getContext("2d").putImageData(pixelsAdoucis, 0, 0);
+
+  return {
+    arriveeNette, arriveeDetouree, arriveeAdoucie, largeurA, hauteurA,
+    fond: creerToile(grille.largeur, grille.hauteur),
+    devant: creerToile(grille.largeur, grille.hauteur)
+  };
+}
+
+function preparerCamera(ressources, apropos) {
+  const { grille, arrivee } = TRANSITION;
+  const scene = document.querySelector(SELECTEURS.heroScene).getBoundingClientRect();
+  const toile = document.querySelector(SELECTEURS.heroCamera);
+  const ratio = window.devicePixelRatio || 1;
+  toile.width = Math.round(scene.width * ratio);
+  toile.height = Math.round(scene.height * ratio);
+  const pas = scene.width / grille.largeur;
+  const versGrille = (element) => {
+    const b = element.getBoundingClientRect();
+    return { x: (b.left - scene.left) / pas, y: (b.top - scene.top) / pas, largeur: b.width / pas, hauteur: b.height / pas };
+  };
+  const calques = TRANSITION.calques.map((reglage) => {
+    const element = document.querySelector(reglage.cible);
+    return { ...reglage, ...versGrille(element), source: element };
+  });
+  const etoiles = [...document.querySelectorAll(`.${CLASSES.etoile}`)].map((etoile) => {
+    const style = getComputedStyle(etoile);
+    return { ...versGrille(etoile), couleur: style.backgroundColor, opacite: parseFloat(style.opacity) };
+  });
+  const echelle = Math.max(apropos.clientWidth / ressources.largeurA, apropos.clientHeight / ressources.hauteurA);
+  const final = {
+    x: ((apropos.clientWidth - ressources.largeurA * echelle) / 2 - scene.left) / pas,
+    y: -scene.top / pas,
+    largeur: ressources.largeurA * echelle / pas
+  };
+  const zoomFinal = final.largeur / arrivee.largeur;
+  const focale = { x: (final.x - arrivee.x * zoomFinal) / (1 - zoomFinal), y: (final.y - arrivee.y * zoomFinal) / (1 - zoomFinal) };
+  const html = TRANSITION.html.map((reglage) => {
+    const element = document.querySelector(reglage.cible);
+    const b = element.getBoundingClientRect();
+    gsap.set(element, { transformOrigin: `${scene.left + focale.x * pas - b.left}px ${scene.top + focale.y * pas - b.top}px` });
+    return { ...reglage, element };
+  });
+  return { ressources, contexte: toile.getContext("2d"), largeur: toile.width, hauteur: toile.height, echelleToile: toile.width / grille.largeur, calques, etoiles, html, zoomFinal, focale };
+}
+
+function dessinerCamera(camera, avancee) {
+  const { ressources, contexte, focale, echelleToile } = camera;
+  const { grille, arrivee } = TRANSITION;
+  const zoom = Math.exp(Math.log(camera.zoomFinal) * avancee);
+  const placer = (objet, z) => ({ x: focale.x + (objet.x - focale.x) * z, y: focale.y + (objet.y - focale.y) * z, largeur: objet.largeur * z, hauteur: objet.hauteur * z });
+  const plans = { fond: ressources.fond.getContext("2d"), devant: ressources.devant.getContext("2d") };
+  Object.values(plans).forEach((plan) => {
+    plan.clearRect(0, 0, grille.largeur, grille.hauteur);
+    plan.imageSmoothingEnabled = avancee > 0;
+  });
+  camera.calques.forEach((calque) => {
+    const z = zoom ** calque.profondeur;
+    const zone = placer(calque, z);
+    const plan = plans[calque.plan];
+    plan.globalAlpha = calque.fondu ? 1 - lisser(calque.fondu[0], calque.fondu[1], avancee) : 1;
+    plan.drawImage(calque.source, zone.x, zone.y, zone.largeur, zone.hauteur);
+    if (calque.etoiles) {
+      camera.etoiles.forEach((etoile) => {
+        const point = placer(etoile, z);
+        plan.globalAlpha = etoile.opacite;
+        plan.fillStyle = etoile.couleur;
+        plan.fillRect(Math.round(point.x), Math.round(point.y), etoile.largeur, etoile.largeur);
+      });
+    }
+  });
+  plans.fond.globalAlpha = 1;
+  plans.devant.globalAlpha = 1;
+
+  contexte.clearRect(0, 0, camera.largeur, camera.hauteur);
+  contexte.imageSmoothingEnabled = false;
+  contexte.drawImage(ressources.fond, 0, 0, camera.largeur, camera.hauteur);
+
+  const image = placer(arrivee, zoom);
+  const enToile = { x: image.x * echelleToile, y: image.y * echelleToile, largeur: image.largeur * echelleToile, hauteur: image.hauteur * echelleToile };
+  const revelee = lisser(TRANSITION.revelation[0], TRANSITION.revelation[1], avancee);
+  const nette = lisser(TRANSITION.bordsNets[0], TRANSITION.bordsNets[1], avancee);
+  const lisseImage = enToile.largeur < ressources.largeurA * 0.98;
+  const marge = TRANSITION.detourage.marge * enToile.largeur / ressources.largeurA;
+  // ordre : ciel de l'arrivée (fondu de fin), château et lune détourés, puis image nette à la toute fin
+  contexte.imageSmoothingEnabled = lisseImage;
+  contexte.globalAlpha = lisser(TRANSITION.cielArrivee[0], TRANSITION.cielArrivee[1], avancee);
+  contexte.drawImage(ressources.arriveeAdoucie, enToile.x, enToile.y, enToile.largeur, enToile.hauteur);
+  contexte.globalAlpha = revelee;
+  contexte.drawImage(ressources.arriveeDetouree, enToile.x, enToile.y - marge, enToile.largeur, enToile.hauteur + marge);
+  contexte.globalAlpha = nette;
+  contexte.drawImage(ressources.arriveeNette, enToile.x, enToile.y, enToile.largeur, enToile.hauteur);
+
+  contexte.globalAlpha = 1;
+  contexte.imageSmoothingEnabled = false;
+  contexte.drawImage(ressources.devant, 0, 0, camera.largeur, camera.hauteur);
+
+  camera.html.forEach(({ element, profondeur, fondu }) => {
+    gsap.set(element, { scale: zoom ** profondeur, opacity: 1 - lisser(fondu[0], fondu[1], avancee) });
+  });
+}
+
+function entrerDansCamera(ressources, apropos, avancee) {
+  derivesBrume.forEach((derive) => derive.pause());
+  const camera = preparerCamera(ressources, apropos);
+  dessinerCamera(camera, avancee);
+  hero.classList.add(CLASSES.heroPassage);
+  return camera;
+}
+
+function sortirDeCamera(camera) {
+  camera.html.forEach(({ element }) => gsap.set(element, { clearProps: "transform,transformOrigin,opacity" }));
+  hero.classList.remove(CLASSES.heroPassage);
+  derivesBrume.forEach((derive) => derive.resume());
+}
+
+function allerA(section) {
+  window.scrollTo({ top: section.offsetTop, behavior: "instant" });
+  ScrollTrigger.update();
+}
+
+function terminerTransition() {
+  enTransition = false;
+  reposJusqua = performance.now() + TRANSITION.repos;
+  if (zoneDifferee && !zonesDecouvertes.has(zoneDifferee.id)) {
+    zonesDecouvertes.add(zoneDifferee.id);
+    annoncerZone(zoneDifferee);
+  }
+  zoneDifferee = null;
+}
+
+function descendre(ressources, apropos, decor) {
+  enTransition = true;
+  const dejaVue = zonesDecouvertes.has(apropos.id);
+  const camera = entrerDansCamera(ressources, apropos, 0);
+  const etat = { avancee: 0 };
+  gsap.timeline()
+    .to(etat, { avancee: 1, duration: TRANSITION.duree, ease: TRANSITION.courbe, onUpdate: () => dessinerCamera(camera, etat.avancee) })
+    .add(() => {
+      gsap.set([decor, SELECTEURS.ajustable], { "--voile-decor": 0 });
+      if (dejaVue) {
+        gsap.set(SELECTEURS.ajustable, { autoAlpha: 0 });
+      }
+      allerA(apropos);
+      sortirDeCamera(camera);
+      gsap.to([decor, SELECTEURS.ajustable], { "--voile-decor": 1, duration: TRANSITION.dureeVoileDecor, ease: "power1.out" });
+      if (dejaVue) {
+        gsap.to(SELECTEURS.ajustable, { autoAlpha: 1, duration: TRANSITION.dureeVoileDecor, ease: "power1.out", clearProps: "opacity,visibility" });
+      }
+      terminerTransition();
+    });
+}
+
+function remonter(ressources, apropos, decor) {
+  enTransition = true;
+  gsap.timeline()
+    .to(SELECTEURS.ajustable, { autoAlpha: 0, duration: TRANSITION.dureeVoile, ease: "power1.in" })
+    .to([decor, SELECTEURS.ajustable], { "--voile-decor": 0, duration: TRANSITION.dureeVoile, ease: "power1.in" }, "<")
+    .add(() => {
+      allerA(hero);
+      const camera = entrerDansCamera(ressources, apropos, 1);
+      gsap.set(SELECTEURS.ajustable, { clearProps: "opacity,visibility" });
+      gsap.set([decor, SELECTEURS.ajustable], { "--voile-decor": 1 });
+      const etat = { avancee: 1 };
+      gsap.to(etat, {
+        avancee: 0,
+        duration: TRANSITION.duree,
+        ease: TRANSITION.courbe,
+        onUpdate: () => dessinerCamera(camera, etat.avancee),
+        onComplete: () => {
+          sortirDeCamera(camera);
+          terminerTransition();
+        }
+      });
+    });
+}
+
+
+function activerPassage() {
+  const apropos = document.querySelector(SELECTEURS.zoneApropos);
+  const decor = document.querySelector(SELECTEURS.decorApropos);
+  let ressources = null;
+  preparerRessources(decor).then((pretes) => { ressources = pretes; });
+  const surHero = () => window.scrollY < hero.offsetTop + 8;
+  const enHautApropos = () => Math.abs(window.scrollY - apropos.offsetTop) < 8;
+  let departTactile = null;
+  const bloque = () => enTransition || performance.now() < reposJusqua;
+  const tenter = (versLeBas, evenement) => {
+    if (document.documentElement.classList.contains(CLASSES.chargementActif)) {
+      return false;
+    }
+    if (bloque() || (!ressources && concerne(versLeBas))) {
+      evenement.preventDefault();
+      return true;
+    }
+    if (versLeBas && surHero()) {
+      evenement.preventDefault();
+      descendre(ressources, apropos, decor);
+      return true;
+    }
+    if (!versLeBas && enHautApropos()) {
+      evenement.preventDefault();
+      remonter(ressources, apropos, decor);
+      return true;
+    }
+    return false;
+  };
+  const concerne = (versLeBas) => (versLeBas ? surHero() : enHautApropos());
+  const surMolette = (evenement) => {
+    if (evenement.deltaY !== 0) {
+      tenter(evenement.deltaY > 0, evenement);
+    }
+  };
+  const surDebutTactile = (evenement) => {
+    departTactile = evenement.touches[0].clientY;
+  };
+  const surMouvementTactile = (evenement) => {
+    if (departTactile === null) {
+      return;
+    }
+    const ecart = departTactile - evenement.touches[0].clientY;
+    if (bloque() || concerne(ecart > 0)) {
+      evenement.preventDefault();
+    }
+    if (Math.abs(ecart) > TRANSITION.seuilTactile && tenter(ecart > 0, evenement)) {
+      departTactile = null;
+    }
+  };
+  const surTouche = (evenement) => {
+    const cible = evenement.target;
+    if (cible.closest(SELECTEURS.tablist) || (evenement.key === " " && cible.closest("button, a"))) {
+      return;
+    }
+    if (TRANSITION.touchesBas.includes(evenement.key)) {
+      tenter(true, evenement);
+    } else if (TRANSITION.touchesHaut.includes(evenement.key)) {
+      tenter(false, evenement);
+    }
+  };
+  const surClic = (evenement) => {
+    const lien = evenement.target.closest(`${SELECTEURS.lienApropos}, ${SELECTEURS.lienAccueil}`);
+    if (lien) {
+      tenter(lien.matches(SELECTEURS.lienApropos), evenement);
+    }
+  };
+  window.addEventListener("wheel", surMolette, { passive: false });
+  window.addEventListener("touchstart", surDebutTactile, { passive: true });
+  window.addEventListener("touchmove", surMouvementTactile, { passive: false });
+  window.addEventListener("keydown", surTouche);
+  document.addEventListener("click", surClic);
+  return () => {
+    window.removeEventListener("wheel", surMolette);
+    window.removeEventListener("touchstart", surDebutTactile);
+    window.removeEventListener("touchmove", surMouvementTactile);
+    window.removeEventListener("keydown", surTouche);
+    document.removeEventListener("click", surClic);
+  };
+}
+
 function reveler(titre) {
   if (!titre) {
     return;
@@ -476,6 +875,10 @@ function annoncerLesZones() {
       trigger: zone,
       start: NAVIGATION.debutZone,
       onEnter: () => {
+        if (enTransition) {
+          zoneDifferee = zone;
+          return;
+        }
         if (!zonesDecouvertes.has(zone.id)) {
           zonesDecouvertes.add(zone.id);
           annoncerZone(zone);
@@ -483,6 +886,39 @@ function annoncerLesZones() {
       }
     });
   });
+}
+
+// Or liquide en pixel art : deux masses descendent du haut et montent du bas avec des fronts
+// ondulants ; leur bord est le plus lumineux, un halo tramé les entoure.
+function dessinerOr(contexte, avancee, phase) {
+  const { largeur, hauteur, debordement, vagues, pincement, halo, couleurs } = ONGLETS.or;
+  const trame = [[0, 8, 2, 10], [12, 4, 14, 6], [3, 11, 1, 9], [15, 7, 13, 5]];
+  const image = contexte.createImageData(largeur, hauteur);
+  const profondeur = avancee * (hauteur / 2 + debordement);
+  const poser = (i, couleur) => {
+    image.data.set(couleur, i);
+    image.data[i + 3] = 255;
+  };
+  for (let x = 0; x < largeur; x++) {
+    const ecartCentre = Math.abs(x - largeur / 2) / (largeur / 2);
+    const onde = (decalage) => vagues.reduce((somme, vague, n) => somme + vague.amplitude * Math.sin(x * vague.frequence + phase * (n + 1) + decalage), 0);
+    const frontHaut = profondeur + onde(0) * avancee + pincement * ecartCentre * ecartCentre * avancee;
+    const frontBas = profondeur + onde(2.1) * avancee + pincement * ecartCentre * ecartCentre * avancee;
+    for (let y = 0; y < hauteur; y++) {
+      const dedans = Math.max(frontHaut - y, frontBas - (hauteur - 1 - y));
+      const i = (y * largeur + x) * 4;
+      if (dedans >= 0) {
+        if (dedans < 2) poser(i, couleurs.coeur);
+        else if (dedans < 5) poser(i, couleurs.clair);
+        else if (dedans < 10) poser(i, couleurs.vif);
+        else poser(i, Math.floor(dedans + phase * 3) % 14 < 3 ? couleurs.ride : couleurs.or);
+      } else if (-dedans < halo && avancee > 0) {
+        const intensite = 1 - -dedans / halo;
+        if (trame[y & 3][x & 3] / 16 < intensite * 0.85) poser(i, -dedans < 2 ? couleurs.or : couleurs.halo);
+      }
+    }
+  }
+  contexte.putImageData(image, 0, 0);
 }
 
 function activerOnglet(boutons, bouton, portrait, avecFocus) {
@@ -495,12 +931,30 @@ function activerOnglet(boutons, bouton, portrait, avecFocus) {
   if (avecFocus) {
     bouton.focus();
   }
-  portrait.src = bouton.dataset.portrait;
-  portrait.alt = bouton.dataset.alt;
-  if (mouvementAutorise) {
-    const panneau = document.getElementById(bouton.getAttribute("aria-controls"));
-    gsap.fromTo([portrait, panneau], { opacity: 0 }, { opacity: 1, duration: ONGLETS.dureeFondu, ease: ONGLETS.courbeFondu });
+  const changerPortrait = () => {
+    portrait.src = bouton.dataset.portrait;
+    portrait.alt = bouton.dataset.alt;
+  };
+  if (!mouvementAutorise) {
+    changerPortrait();
+    return;
   }
+  const panneau = document.getElementById(bouton.getAttribute("aria-controls"));
+  gsap.fromTo(panneau, { opacity: 0 }, { opacity: 1, duration: ONGLETS.dureeFondu, ease: ONGLETS.courbeFondu });
+  // de l'or liquide coule du haut et du bas, recouvre le portrait, qui change, puis se retire
+  const { or } = ONGLETS;
+  const toile = portrait.parentElement.querySelector(SELECTEURS.orPortrait);
+  const contexte = toile.getContext("2d");
+  const etat = { avancee: 0, phase: Math.random() * Math.PI * 2 };
+  const dessiner = () => dessinerOr(contexte, etat.avancee, etat.phase);
+  animationPortrait?.progress(1).kill();
+  animationPortrait = gsap.timeline()
+    .set(toile, { autoAlpha: 1 })
+    .to(etat, { phase: `+=${or.ondulation}`, duration: or.entree + or.sortie, ease: "none" }, 0)
+    .to(etat, { avancee: 1, duration: or.entree, ease: "power2.in", onUpdate: dessiner }, 0)
+    .add(changerPortrait, or.entree)
+    .to(etat, { avancee: 0, duration: or.sortie, ease: "power2.out", onUpdate: dessiner }, or.entree)
+    .set(toile, { autoAlpha: 0 }, or.entree + or.sortie);
 }
 
 function initialiserOnglets() {
@@ -611,12 +1065,15 @@ medias.add(MEDIAS, (contexte) => {
   } else {
     chemin.classList.remove(CLASSES.cheminDeploye);
   }
+  let arreterPassage = null;
   if (mouvement) {
     animerDecor();
     programmerEtoileFilante(DECOR.filante.delaiMin);
     annoncerLesZones();
+    arreterPassage = activerPassage();
   }
   return () => {
+    arreterPassage?.();
     prochaineFilante?.kill();
     chemin.classList.add(CLASSES.cheminDeploye);
     document.querySelectorAll(SELECTEURS.zoneTitre).forEach((titre) => gsap.set(titre, { clearProps: "opacity" }));

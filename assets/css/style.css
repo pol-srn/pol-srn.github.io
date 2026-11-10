@@ -110,6 +110,11 @@
   --ecart-classes: 1.875rem;
   --ecart-fiche: 2rem;
   --marge-apropos: 3.5rem 0 2.5rem 7.5rem;
+  --voile-haut: 7rem;
+  --voile-gauche: -2.5rem;
+  --voile-largeur: 92rem;
+  --voile-hauteur: 47.5rem;
+  --voile-flou: 7.5rem;
   --taille-titre-apropos: 5.5625rem;
   --reserve-chemin: 10rem;
   --taille-case: 5.25rem;
@@ -434,6 +439,26 @@ img {
   inset: 0;
 }
 
+.hero__camera {
+  visibility: hidden;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.hero--passage .hero__camera {
+  visibility: visible;
+}
+
+.hero--passage :is(.hero__calque, .hero__etoiles, .hero__feu) {
+  visibility: hidden;
+}
+
+.hero--passage :is(.hero__lune, .hero__halo, .hero__contenu) {
+  will-change: transform;
+}
+
 .hero__etoile {
   position: absolute;
   top: var(--y);
@@ -530,7 +555,7 @@ img {
 }
 
 .hero__lune {
-  background: radial-gradient(ellipse 4.3% 7.8% at 60.78% 28.3%, rgb(158 173 184 / 0.55) 0%, rgb(140 158 173 / 0.42) 62%, rgb(77 102 128 / 0.12) 72%, rgb(51 77 102 / 0) 100%);
+  background: radial-gradient(ellipse 1.6% 2.9% at 56.88% 30.97%, rgb(158 173 184 / 0.55) 0%, rgb(140 158 173 / 0.42) 62%, rgb(77 102 128 / 0.12) 72%, rgb(51 77 102 / 0) 100%);
   mix-blend-mode: screen;
 }
 
@@ -775,18 +800,15 @@ img {
   position: absolute;
   inset: 0;
   z-index: -1;
-  background-image: url("../images/hero/brume-loin.png"), url("../images/hero/montagne.png"), url("../images/hero/ciel.png");
-  background-position: -88vw -30vw;
-  background-repeat: no-repeat;
-  background-size: 283vw auto;
+  background: url("../images/a-propos/arrivee-chateau.webp") 50% 0% / cover no-repeat;
   image-rendering: pixelated;
-  filter: brightness(0.7);
 }
 
 .apropos__decor::after {
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse 55% 60% at 45% 60%, rgb(var(--couleur-nuit) / 0.55), rgb(var(--couleur-nuit) / 0.92));
+  background: radial-gradient(ellipse 60% 70% at 40% 55%, rgb(var(--couleur-nuit) / 0.7), rgb(var(--couleur-nuit) / 0.4));
+  opacity: var(--voile-decor, 1);
   content: "";
 }
 
@@ -813,7 +835,24 @@ img {
   }
 
   .apropos {
+    position: relative;
     padding: var(--marge-apropos);
+  }
+
+  /* voile sombre flouté derrière le contenu, comme sur la maquette V4 */
+  .apropos::before {
+    position: absolute;
+    top: var(--voile-haut);
+    left: var(--voile-gauche);
+    z-index: -1;
+    width: var(--voile-largeur);
+    height: var(--voile-hauteur);
+    background: rgb(0 0 0 / 0.45);
+    border-radius: 50%;
+    opacity: var(--voile-decor, 1);
+    filter: blur(var(--voile-flou));
+    pointer-events: none;
+    content: "";
   }
 
   .apropos__titre {
@@ -962,6 +1001,18 @@ img {
   width: var(--largeur-portrait);
   height: auto;
   image-rendering: pixelated;
+}
+
+/* or liquide qui recouvre le portrait au changement de classe (dessiné en pixels de 2 px) */
+.apropos__or {
+  visibility: hidden;
+  position: absolute;
+  inset: 0.4375rem;
+  width: var(--largeur-portrait);
+  height: auto;
+  aspect-ratio: 152 / 192;
+  image-rendering: pixelated;
+  pointer-events: none;
 }
 
 .apropos__nom {
