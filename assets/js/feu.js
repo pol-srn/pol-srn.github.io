@@ -434,6 +434,9 @@ function creerFeu(canvas, reglages) {
     requestAnimationFrame(boucle);
   };
 
+  // promesse tenue quand le feu peut être dessiné (sprite chargé) : l'écran de chargement l'attend
+  let signalerCharge;
+  const charge = new Promise((fin) => { signalerCharge = fin; });
   if (reglages.calques) {
     const image = new Image();
     image.addEventListener("load", () => {
@@ -441,13 +444,17 @@ function creerFeu(canvas, reglages) {
       construireChampImage(image);
       etat.pret = true;
       dessiner();
+      signalerCharge();
     });
+    image.addEventListener("error", signalerCharge);
     image.src = canvas.dataset.sprite;
   } else {
     construireChampLobes();
+    signalerCharge();
   }
 
   return {
+    charge,
     demarrer(mode = "eteint") {
       etat.mode = mode;
       etat.actif = true;

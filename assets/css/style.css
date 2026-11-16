@@ -7,30 +7,6 @@
 }
 
 @font-face {
-  font-family: "IM Fell English";
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url("../fonts/im-fell-english-latin.woff2") format("woff2");
-}
-
-@font-face {
-  font-family: "IM Fell English";
-  font-style: italic;
-  font-weight: 400;
-  font-display: swap;
-  src: url("../fonts/im-fell-english-italique-latin.woff2") format("woff2");
-}
-
-@font-face {
-  font-family: "IM Fell English SC";
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url("../fonts/im-fell-english-sc-latin.woff2") format("woff2");
-}
-
-@font-face {
   font-family: "Schibsted Grotesk";
   font-style: normal;
   font-weight: 400 700;
@@ -46,14 +22,6 @@
   font-display: swap;
   src: url("../fonts/schibsted-grotesk-latin-ext.woff2") format("woff2");
   unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
-}
-
-@font-face {
-  font-family: "Pixelify Sans";
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url("../fonts/pixelify-sans-latin.woff2") format("woff2");
 }
 
 :root {
@@ -75,10 +43,7 @@
   --couleur-jauge: #140c0a;
 
   --police-titre: "Pirata One", "Old English Text MT", serif;
-  --police-grimoire: "IM Fell English", Georgia, serif;
-  --police-grimoire-sc: "IM Fell English SC", Georgia, serif;
   --police-texte: "Schibsted Grotesk", system-ui, sans-serif;
-  --police-pixel: "Pixelify Sans", monospace;
 
   --taille-titre-hero: clamp(4rem, 3.5rem + 7vw, 9.75rem);
   --taille-titre-zone: clamp(3rem, 2rem + 5vw, 8rem);
@@ -126,6 +91,8 @@
   --couleur-terne: #8f897b;
   --couleur-terne-clair: #a39c8a;
   --couleur-case: #3a3424;
+  --couleur-chemin-quete: #b0472a;
+  --largeur-panneau-projets: 17rem;
 
   --largeur-feu-chargement: 16.5rem;
   --hauteur-feu-chargement: 18.75rem;
@@ -219,6 +186,13 @@ img {
   gap: var(--espace-m);
   position: relative;
   margin-top: var(--decalage-feu-chargement);
+}
+
+/* animations réduites : pas de feu figé à moitié chargé, la jauge suffit */
+@media (prefers-reduced-motion: reduce) {
+  .chargement__feu {
+    visibility: hidden;
+  }
 }
 
 .chargement__feu {
@@ -318,7 +292,7 @@ img {
 
 .chargement__texte {
   margin: 0;
-  font-family: var(--police-pixel);
+  font-family: var(--police-texte);
   font-size: var(--taille-petit);
   letter-spacing: 0.08em;
   color: var(--couleur-texte-2);
@@ -555,7 +529,7 @@ img {
 }
 
 .hero__lune {
-  background: radial-gradient(ellipse 1.6% 2.9% at 56.88% 30.97%, rgb(158 173 184 / 0.55) 0%, rgb(140 158 173 / 0.42) 62%, rgb(77 102 128 / 0.12) 72%, rgb(51 77 102 / 0) 100%);
+  background: radial-gradient(ellipse 1.6% 2.9% at 56.89% 30.91%, rgb(158 173 184 / 0.55) 0%, rgb(140 158 173 / 0.42) 62%, rgb(77 102 128 / 0.12) 72%, rgb(51 77 102 / 0) 100%);
   mix-blend-mode: screen;
 }
 
@@ -870,10 +844,11 @@ img {
 .apropos__intitule,
 .equipement__titre {
   margin: 0;
-  font-family: var(--police-grimoire-sc);
-  font-size: 0.875rem;
+  font-family: var(--police-texte);
+  font-size: 0.6825rem;
   font-weight: 400;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   color: var(--couleur-or);
 }
 
@@ -912,7 +887,7 @@ img {
 }
 
 .classes__nom {
-  font-family: var(--police-grimoire);
+  font-family: var(--police-texte);
   font-size: 1.5rem;
   line-height: 1.2;
   color: var(--couleur-terne);
@@ -920,9 +895,8 @@ img {
 }
 
 .classes__type {
-  font-family: var(--police-grimoire);
+  font-family: var(--police-texte);
   font-size: 1rem;
-  font-style: italic;
   color: var(--couleur-terne);
   transition: color 0.3s;
 }
@@ -956,14 +930,18 @@ img {
 
 .apropos__astuce {
   margin: 0.875rem 0 0;
-  font-family: var(--police-grimoire);
+  font-family: var(--police-texte);
   font-size: 0.9375rem;
-  font-style: italic;
   color: var(--couleur-terne);
 }
 
 .apropos__identite {
   grid-area: identite;
+}
+
+/* la carte du portrait : elle s'incline sous la souris (le retournement du skin se fait dedans) */
+.apropos__carte {
+  width: fit-content;
 }
 
 .apropos__cadre {
@@ -1003,21 +981,54 @@ img {
   image-rendering: pixelated;
 }
 
-/* or liquide qui recouvre le portrait au changement de classe (dessiné en pixels de 2 px) */
-.apropos__or {
-  visibility: hidden;
+/* ---------- Reflet doré de carte à collectionner (survol de la photo) ----------
+   Variables posées en JS, lissées comme l'inclinaison de la carte :
+   --reflet-x / --reflet-y : position du pointeur sur la carte (0 % à 100 %)
+   --reflet-dx / --reflet-dy : écart au centre (-50 % à 50 %), amplifié pour faire défiler les bandes
+   --reflet-angle : direction du pointeur depuis le centre, pour la lumière du liseré
+   --reflet-opacite : 0 au repos, 1 pendant le survol */
+.apropos__portrait {
+  position: relative;
+}
+
+/* liseré : le cadre entre la photo et le filet s'illumine d'or, la lumière tourne avec la souris */
+.apropos__lisere {
+  position: absolute;
+  inset: 0;
+  background: conic-gradient(from var(--reflet-angle, 135deg), #f2d896, #c99a45 12%, #8a6424 30%, #3f2b0e 50%, #8a6424 70%, #e2b65a 88%, #fff1c4);
+  box-shadow: 0 0 0.625rem rgb(255 196 100 / 0.25), 0 0 0.1875rem rgb(255 226 160 / 0.35);
+  opacity: calc(var(--reflet-opacite, 0) * 0.8);
+  transition: opacity 0.35s ease-out;
+  pointer-events: none;
+}
+
+/* reflet holographique doré sur la photo : bandes d'or qui balaient la carte plus vite que le pointeur,
+   paillettes en parallaxe qui scintillent au mouvement */
+.apropos__reflet {
   position: absolute;
   inset: 0.4375rem;
-  width: var(--largeur-portrait);
-  height: auto;
-  aspect-ratio: 152 / 192;
-  image-rendering: pixelated;
+  overflow: hidden;
+  background:
+    /* éclat : une tache de lumière chaude, large et douce, qui suit le pointeur */
+    radial-gradient(farthest-corner circle at var(--reflet-x, 50%) var(--reflet-y, 50%), rgb(255 236 190 / 0.55) 0%, rgb(255 214 140 / 0.2) 22%, transparent 55%),
+    radial-gradient(circle, rgb(255 244 205 / 0.75) 0 1px, transparent 1.5px) calc(0.25rem + var(--reflet-dx, 0%) * -0.6) calc(0.5rem + var(--reflet-dy, 0%) * -0.6) / 1.6875rem 2.3125rem,
+    radial-gradient(circle, rgb(255 220 140 / 0.6) 0 1px, transparent 1.5px) calc(1.1875rem + var(--reflet-dx, 0%) * 0.9) calc(1.4375rem + var(--reflet-dy, 0%) * 0.9) / 2.4375rem 1.9375rem,
+    radial-gradient(circle, rgb(255 232 165 / 0.5) 0 1.5px, transparent 2px) calc(0.75rem + var(--reflet-dx, 0%) * 0.3) calc(1.875rem + var(--reflet-dy, 0%) * 0.3) / 3.0625rem 2.6875rem,
+    repeating-linear-gradient(115deg, #3a250a 0%, #8a6424 3%, #e2b65a 5.5%, #fff1c4 6.5%, #e2b65a 7.5%, #8a6424 10%, #3a250a 13%) calc(50% + var(--reflet-dx, 0%) * 1.5) calc(50% + var(--reflet-dy, 0%) * 1.5) / 300% 300%;
+  opacity: calc(var(--reflet-opacite, 0) * 0.35);
+  mix-blend-mode: color-dodge;
+  transition: opacity 0.35s ease-out;
   pointer-events: none;
+}
+
+/* le filet doré du cadre s'allume pendant le survol */
+.apropos__carte:hover .apropos__cadre::before {
+  border-color: var(--couleur-or);
 }
 
 .apropos__nom {
   margin: 0.875rem 0 0;
-  font-family: var(--police-grimoire);
+  font-family: var(--police-texte);
   font-size: 2rem;
   line-height: 1.2;
   color: var(--couleur-ivoire);
@@ -1031,9 +1042,8 @@ img {
 
 .apropos__dispo {
   margin: 0.125rem 0 0;
-  font-family: var(--police-grimoire);
+  font-family: var(--police-texte);
   font-size: 1rem;
-  font-style: italic;
   color: var(--couleur-or);
 }
 
@@ -1050,7 +1060,7 @@ img {
 
 .fiche__nom {
   margin: 0;
-  font-family: var(--police-grimoire);
+  font-family: var(--police-texte);
   font-size: 2.25rem;
   font-weight: 400;
   line-height: 1.2;
@@ -1059,9 +1069,8 @@ img {
 
 .fiche__type {
   margin: 0.0625rem 0 0.6875rem;
-  font-family: var(--police-grimoire);
+  font-family: var(--police-texte);
   font-size: 1.25rem;
-  font-style: italic;
   color: var(--couleur-or);
 }
 
@@ -1102,15 +1111,16 @@ img {
 }
 
 .fiche__ligne dt {
-  font-family: var(--police-grimoire-sc);
-  font-size: 1rem;
-  letter-spacing: 0.1em;
+  font-family: var(--police-texte);
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   color: var(--couleur-terne-clair);
 }
 
 .fiche__ligne dd {
   margin: 0;
-  font-family: var(--police-grimoire);
+  font-family: var(--police-texte);
   font-size: 1.125rem;
   text-align: right;
   color: var(--couleur-ivoire);
@@ -1118,9 +1128,8 @@ img {
 
 .fiche__question {
   margin: 0 0 0.25rem;
-  font-family: var(--police-grimoire);
+  font-family: var(--police-texte);
   font-size: 1.25rem;
-  font-style: italic;
   color: var(--couleur-or);
 }
 
@@ -1161,7 +1170,7 @@ img {
 }
 
 .equipement__legende {
-  font-family: var(--police-grimoire);
+  font-family: var(--police-texte);
   font-size: 0.9375rem;
   text-align: center;
   white-space: nowrap;
@@ -1210,7 +1219,7 @@ img {
 }
 
 .equipement__detail strong {
-  font-family: var(--police-grimoire);
+  font-family: var(--police-texte);
   font-size: 1.25rem;
   font-weight: 400;
   color: var(--couleur-ivoire);
@@ -1231,6 +1240,627 @@ img {
       "panneau panneau";
     row-gap: var(--espace-l);
   }
+}
+
+/* caméra de la transition À propos <-> Projets */
+.passage {
+  visibility: hidden;
+  position: fixed;
+  inset: 0;
+  z-index: 8;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* ---------- Projets : la pièce du château, la carte des quêtes au mur ---------- */
+.zone--projets {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  justify-content: center;
+  padding-top: 3.5rem;
+  padding-right: calc(var(--marge-page) + var(--reserve-chemin));
+  padding-bottom: 2.5rem;
+}
+
+.projets__decor {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background: url("../images/projets/piece.webp") 50% 50% / cover no-repeat;
+  image-rendering: pixelated;
+}
+
+.projets__decor--cadre {
+  inset: auto;
+  top: var(--piece-y);
+  left: var(--piece-x);
+  width: var(--piece-largeur);
+  height: var(--piece-hauteur);
+  background-size: 100% 100%;
+}
+
+/* flammes animées posées sur les bougies peintes, à la taille des pixels de la pièce */
+.projets__bougies {
+  position: absolute;
+  top: var(--piece-y, 0);
+  left: var(--piece-x, 0);
+  z-index: -2;
+  width: var(--piece-largeur, 100%);
+  height: var(--piece-hauteur, 100%);
+  image-rendering: pixelated;
+  pointer-events: none;
+}
+
+.zone--projets::after {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  /* voile léger à gauche, derrière le titre, qui s'arrête avant la carte centrée */
+  background: linear-gradient(90deg, rgb(var(--couleur-nuit) / 0.85) 0%, rgb(var(--couleur-nuit) / 0.5) 14%, rgb(var(--couleur-nuit) / 0) 24%);
+  opacity: var(--voile-decor, 1);
+  pointer-events: none;
+  content: "";
+}
+
+.projets__carte {
+  position: absolute;
+  top: var(--carte-y, 24%);
+  left: var(--carte-x, 36%);
+  z-index: 1;
+  width: var(--carte-largeur, 38%);
+  height: var(--carte-hauteur, 41%);
+}
+
+/* ---------- Affiches clouées sur la carte : roulées au repos, déroulées au survol ---------- */
+/* tailles en cqw : les affiches suivent la taille de la carte ; la carte peinte fait 162 pixels de
+   large, donc un pixel de la carte = 100 / 162 = 0.617cqw (le rouleau et le clou suivent cette grille) */
+.projets__carte {
+  --pixel-carte: 0.617cqw;
+  container-type: inline-size;
+}
+
+.affiche {
+  --courbe-deroule: cubic-bezier(0.3, 0.7, 0.2, 1);
+  --duree-deroule: 0.6s;
+  position: absolute;
+  top: var(--ay);
+  left: var(--ax);
+  z-index: 1;
+  width: 13.1cqw;
+  padding: 0;
+  font: inherit;
+  text-align: center;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  transform-origin: 50% var(--pixel-carte);
+  /* roulée, l'affiche reste droite : une rotation casserait la grille de pixels du rouleau */
+  transition: rotate var(--duree-deroule) var(--courbe-deroule);
+  /* seuls le rouleau et l'affiche ouverte réagissent au pointeur, pas la place vide de l'affiche roulée */
+  pointer-events: none;
+}
+
+/* le clou, en pixels comme la carte */
+.affiche::after {
+  position: absolute;
+  top: calc(var(--pixel-carte) * -0.5);
+  left: 50%;
+  z-index: 2;
+  width: calc(var(--pixel-carte) * 3);
+  aspect-ratio: 3 / 4;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 3 4' shape-rendering='crispEdges'%3E%3Crect x='1' y='3' width='2' height='1' fill='%23000' fill-opacity='.45'/%3E%3Crect x='0' y='1' width='3' height='1' fill='%235a5e68'/%3E%3Crect x='1' y='0' width='1' height='3' fill='%235a5e68'/%3E%3Crect x='1' y='0' width='1' height='1' fill='%23c9ccd4'/%3E%3Crect x='0' y='1' width='1' height='1' fill='%239a978f'/%3E%3Crect x='2' y='1' width='1' height='1' fill='%231d1f24'/%3E%3Crect x='1' y='2' width='1' height='1' fill='%231d1f24'/%3E%3C/svg%3E") 0 0 / 100% 100% no-repeat;
+  image-rendering: pixelated;
+  translate: -50% 0;
+  content: "";
+}
+
+.affiche__deroule {
+  display: block;
+  clip-path: inset(0 0 100% 0);
+  transition: clip-path var(--duree-deroule) var(--courbe-deroule);
+}
+
+.affiche__papier {
+  display: block;
+  padding: 1.25cqw 0.95cqw 1.1cqw;
+  background:
+    linear-gradient(315deg, rgb(60 40 20 / 0.45) 0 7%, transparent 7.5%),
+    radial-gradient(circle at 30% 20%, rgb(255 240 200 / 0.3), transparent 50%),
+    radial-gradient(circle at 80% 85%, rgb(90 60 30 / 0.35), transparent 55%),
+    #d2bd8c;
+  clip-path: polygon(0 2%, 22% 0, 48% 1.5%, 76% 0, 100% 1%, 99% 34%, 100% 66%, 98% 93%, 93% 100%, 62% 98%, 34% 100%, 3% 99%, 1% 68%, 0 33%);
+}
+
+.affiche__vignette {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  filter: sepia(0.4) brightness(0.9);
+  border: 1px solid rgb(43 29 18 / 0.5);
+}
+
+.affiche__nom {
+  display: block;
+  margin-top: 0.6cqw;
+  font-family: var(--police-titre);
+  font-size: 1.9cqw;
+  line-height: 1.05;
+  color: #2b1d12;
+}
+
+/* le parchemin roulé, en pixels de la carte (24 × 6) : contour d'encre, trois tons de papier, bouts
+   enroulés, deux liens rouges et une ombre franche */
+.affiche__rouleau {
+  position: absolute;
+  top: 0;
+  right: calc(var(--pixel-carte) * -1.4);
+  left: calc(var(--pixel-carte) * -1.4);
+  z-index: 1;
+  display: block;
+  aspect-ratio: 24 / 6;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 6' shape-rendering='crispEdges'%3E%3Crect x='3' y='5' width='20' height='1' fill='%23000' fill-opacity='.4'/%3E%3Crect x='2' y='0' width='20' height='1' fill='%232b1d12'/%3E%3Crect x='2' y='4' width='20' height='1' fill='%232b1d12'/%3E%3Crect x='1' y='1' width='1' height='3' fill='%232b1d12'/%3E%3Crect x='22' y='1' width='1' height='3' fill='%232b1d12'/%3E%3Crect x='3' y='1' width='18' height='1' fill='%23e2c48a'/%3E%3Crect x='3' y='2' width='18' height='1' fill='%23c99a5c'/%3E%3Crect x='3' y='3' width='18' height='1' fill='%238a5a2e'/%3E%3Crect x='2' y='1' width='1' height='3' fill='%236e4a26'/%3E%3Crect x='21' y='1' width='1' height='3' fill='%236e4a26'/%3E%3Crect x='2' y='2' width='1' height='1' fill='%23c99a5c'/%3E%3Crect x='21' y='2' width='1' height='1' fill='%23c99a5c'/%3E%3Crect x='6' y='1' width='2' height='1' fill='%23b8352a'/%3E%3Crect x='6' y='2' width='2' height='2' fill='%238e1d16'/%3E%3Crect x='16' y='1' width='2' height='1' fill='%23b8352a'/%3E%3Crect x='16' y='2' width='2' height='2' fill='%238e1d16'/%3E%3C/svg%3E") 0 0 / 100% 100% no-repeat;
+  image-rendering: pixelated;
+  pointer-events: auto;
+  transition: translate var(--duree-deroule) var(--courbe-deroule), opacity 0.1s;
+}
+
+/* ouverte uniquement pendant le survol (ou le focus clavier) : le papier se révèle de haut en bas
+   pendant que le rouleau descend, puis le rouleau s'efface ; l'affiche prend alors sa légère inclinaison */
+/* zone de détection du rouleau élargie autour du dessin : plus facile à attraper */
+.affiche__rouleau::before {
+  position: absolute;
+  inset: calc(var(--pixel-carte) * -3) calc(var(--pixel-carte) * -1.5) calc(var(--pixel-carte) * -4);
+  content: "";
+}
+
+/* une fois survolée, toute l'affiche capte la souris : le rouleau qui descend ne la fait pas se refermer */
+.affiche:is(:hover, :focus-visible) {
+  z-index: 3;
+  filter: drop-shadow(0 0.4cqw 0.4cqw rgb(0 0 0 / 0.55));
+  rotate: var(--r, 0deg);
+  pointer-events: auto;
+}
+
+.affiche:is(:hover, :focus-visible) .affiche__deroule {
+  clip-path: inset(0 0 0 0);
+  pointer-events: auto;
+}
+
+.affiche:is(:hover, :focus-visible) .affiche__rouleau {
+  opacity: 0;
+  translate: 0 calc(var(--hauteur-affiche, 6rem) - var(--pixel-carte) * 3);
+  transition: translate var(--duree-deroule) var(--courbe-deroule), opacity 0.15s calc(var(--duree-deroule) - 0.1s);
+}
+
+.affiche:is(:hover, :focus-visible) .affiche__vignette {
+  filter: none;
+}
+
+.affiche:focus-visible {
+  outline: 2px solid var(--couleur-accent);
+  outline-offset: 0.5cqw;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .affiche,
+  .affiche__deroule,
+  .affiche__rouleau,
+  .affiche:is(:hover, :focus-visible) .affiche__rouleau {
+    transition: none;
+  }
+}
+
+/* plaque de catégorie (Projets IUT / Projets perso), posée en haut de la carte */
+.projets__onglets {
+  display: flex;
+  align-items: center;
+  gap: 1cqw;
+  position: absolute;
+  top: 2.4cqw;
+  left: 50%;
+  z-index: 4;
+  padding: 0.5cqw 0.9cqw;
+  background: rgb(20 12 6 / 0.82);
+  border: 1px solid var(--couleur-or-sombre);
+  box-shadow: 0 0.3cqw 0.8cqw rgb(0 0 0 / 0.5);
+  translate: -50% 0;
+}
+
+.projets__categorie {
+  min-width: 13cqw;
+  margin: 0;
+  font-family: var(--police-titre);
+  font-size: 2.2cqw;
+  line-height: 1.1;
+  text-align: center;
+  color: var(--couleur-ivoire);
+}
+
+.projets__fleche {
+  width: 2.2cqw;
+  height: 2.2cqw;
+  padding: 0;
+  background: var(--couleur-or);
+  border: 0;
+  clip-path: polygon(100% 0, 0 50%, 100% 100%);
+  cursor: pointer;
+  transition: background-color var(--duree-courte), scale var(--duree-courte);
+}
+
+.projets__fleche--suivante {
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
+}
+
+.projets__fleche:hover {
+  background: var(--couleur-ivoire);
+  scale: 1.15;
+}
+
+.projets__fleche:focus-visible {
+  outline: 2px solid var(--couleur-accent);
+  outline-offset: 0.4cqw;
+}
+
+.projets {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 2;
+  max-width: var(--largeur-panneau-projets);
+  /* même échelle que l'À propos, recopiée en JS */
+  zoom: var(--echelle, 1);
+  /* titre et consigne ne sont pas interactifs : le panneau, posé au-dessus de la carte, ne doit
+     pas capter la souris à la place des parchemins */
+  pointer-events: none;
+}
+
+.projets__consigne {
+  margin: 0;
+  font-family: var(--police-texte);
+  font-size: 1.125rem;
+  color: var(--couleur-terne-clair);
+}
+
+/* écrans peu hauts (barre de favoris, petit portable) : le panneau se resserre */
+@media (min-width: 48rem) and (max-height: 56rem) {
+  .zone--projets {
+    padding-top: 2.5rem;
+    padding-bottom: 1.5rem;
+  }
+}
+
+/* grand écran : titre placé exactement comme celui de l'À propos (même marge, même taille,
+   même échelle, recopiée en JS depuis l'À propos) */
+@media (min-width: 64rem) {
+  .zone--projets {
+    justify-content: flex-start;
+    padding: 0;
+  }
+
+  .projets {
+    max-width: none;
+    padding: var(--marge-apropos);
+  }
+
+  .projets__titre {
+    margin-bottom: var(--espace-s);
+    font-size: var(--taille-titre-apropos);
+    line-height: 1;
+  }
+
+  .projets__consigne {
+    max-width: 16rem;
+  }
+}
+
+/* ---------- Dossier : le projet en grand, dans une fenêtre au-dessus de la page ---------- */
+.dossier-ouvert {
+  overflow: hidden;
+}
+
+.dossier {
+  width: min(120rem, 100% - 2 * var(--espace-l));
+  max-width: none;
+  max-height: none;
+  margin: auto;
+  padding: 0;
+  overflow: visible;
+  color: var(--couleur-ivoire);
+  background: transparent;
+  border: 0;
+}
+
+/* la fenêtre elle-même n'a pas d'anneau de focus : c'est le bouton de fermeture qui le reçoit */
+.dossier:focus {
+  outline: 0;
+}
+
+.dossier::backdrop {
+  background: rgb(var(--couleur-nuit) / 0.88);
+}
+
+.dossier__cadre {
+  display: grid;
+  grid-template-columns: minmax(0, 24rem) minmax(0, 1fr);
+  align-items: stretch;
+  gap: var(--espace-xl);
+  position: relative;
+  height: calc(100vh - 2 * var(--espace-l));
+  padding: var(--espace-l) var(--espace-l) var(--espace-l) var(--espace-xl);
+  overflow: auto;
+  overscroll-behavior: contain;
+  background: linear-gradient(180deg, var(--couleur-surface), var(--couleur-fond));
+  border: 1px solid var(--couleur-or-sombre);
+  box-shadow: 0 1.5rem 4rem rgb(var(--couleur-nuit) / 0.8);
+}
+
+.dossier__fermer {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  background:
+    linear-gradient(45deg, transparent calc(50% - 1px), var(--couleur-ivoire-2) calc(50% - 1px) calc(50% + 1px), transparent calc(50% + 1px)) center / 1rem 1rem no-repeat,
+    linear-gradient(-45deg, transparent calc(50% - 1px), var(--couleur-ivoire-2) calc(50% - 1px) calc(50% + 1px), transparent calc(50% + 1px)) center / 1rem 1rem no-repeat;
+  border: 1px solid var(--couleur-or-sombre);
+  cursor: pointer;
+  transition: border-color var(--duree-courte);
+}
+
+.dossier__fermer:hover {
+  border-color: var(--couleur-or);
+}
+
+.dossier__texte {
+  min-height: 0;
+  padding-top: var(--espace-l);
+  overflow: auto;
+}
+
+.dossier__type {
+  margin: 0 0 var(--espace-xs);
+  font-family: var(--police-texte);
+  font-size: 1.0625rem;
+  color: var(--couleur-or);
+}
+
+.dossier__titre {
+  margin: 0 0 var(--espace-m);
+  font-family: var(--police-titre);
+  font-size: clamp(2.25rem, 1.75rem + 1.5vw, 3.25rem);
+  font-weight: 400;
+  line-height: 1;
+  color: var(--couleur-ivoire);
+}
+
+.dossier__description {
+  margin: 0 0 var(--espace-s);
+  font-size: 1.0625rem;
+  line-height: 1.55;
+  color: var(--couleur-ivoire-2);
+}
+
+.dossier__details {
+  margin: var(--espace-m) 0;
+  border-top: 1px solid rgb(199 169 107 / 0.35);
+}
+
+.dossier__ligne {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--espace-m);
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgb(199 169 107 / 0.18);
+}
+
+.dossier__ligne dt {
+  font-family: var(--police-texte);
+  font-size: 0.7313rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--couleur-terne-clair);
+}
+
+.dossier__ligne dd {
+  margin: 0;
+  font-size: 0.9375rem;
+  text-align: right;
+  color: var(--couleur-ivoire);
+}
+
+/* le lien du projet reste accroché en bas de la colonne : jamais besoin de faire défiler pour l'atteindre,
+   même si le texte au-dessus est long (il défile alors derrière un léger fondu) */
+.dossier__liens {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  margin: 0;
+  padding: var(--espace-m) 0 var(--espace-xs);
+  background: linear-gradient(180deg, rgb(var(--couleur-nuit) / 0), var(--couleur-fond) 45%);
+}
+
+@media (max-height: 56rem) {
+  .dossier__titre {
+    font-size: clamp(2rem, 1.5rem + 1.2vw, 2.75rem);
+  }
+
+  .dossier__description {
+    font-size: 1rem;
+    line-height: 1.45;
+  }
+
+  .dossier__ligne {
+    padding-block: 0.375rem;
+  }
+}
+
+.dossier__lien {
+  display: inline-block;
+  margin-bottom: var(--espace-s);
+  font-family: var(--police-texte);
+  font-size: 1.0625rem;
+  color: var(--couleur-accent);
+}
+
+.dossier__note {
+  margin: 0;
+  font-family: var(--police-texte);
+  font-size: 0.9375rem;
+  color: var(--couleur-terne);
+}
+
+.dossier__galerie {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  min-height: 0;
+  padding-right: var(--espace-xl);
+}
+
+/* l'image prend toute la largeur de sa colonne, ou toute la hauteur libre si l'écran est bas */
+.dossier__vue {
+  flex: none;
+  align-self: center;
+  position: relative;
+  width: min(100%, (100vh - 12rem) * 16 / 9);
+  margin: 0;
+  border: 1px solid var(--couleur-or-sombre);
+}
+
+/* cadre 16:9 fixe : chaque visuel (capture large, écran de téléphone, dessin carré) y est montré en
+   entier sur fond sombre, sans recadrage ; les vraies images sont lissées (ce ne sont pas du pixel art) */
+.dossier__image,
+.dossier__video {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: contain;
+  background: #070b16;
+}
+
+.dossier__image[hidden],
+.dossier__video[hidden] {
+  display: none;
+}
+
+.dossier__legende:empty {
+  display: none;
+}
+
+/* une seule image : ni flèches ni miniature */
+.dossier__navigation:has(.dossier__miniatures > li:only-child) {
+  display: none;
+}
+
+/* miniature d'une vidéo : petit triangle de lecture */
+.dossier__miniature--video {
+  position: relative;
+}
+
+.dossier__miniature--video::after {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  width: 0.75rem;
+  height: 0.875rem;
+  background: var(--couleur-ivoire);
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
+  translate: -40% -50%;
+  filter: drop-shadow(0 0 2px rgb(0 0 0 / 0.8));
+  content: "";
+}
+
+.dossier__legende {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+  padding: 0.125rem 0.5rem;
+  font-family: var(--police-texte);
+  font-size: 0.6338rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--couleur-ivoire-2);
+  background: rgb(var(--couleur-nuit) / 0.75);
+}
+
+.dossier__navigation {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espace-s);
+  margin-top: var(--espace-s);
+}
+
+.dossier__miniatures {
+  display: flex;
+  gap: var(--espace-xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dossier__miniature {
+  display: block;
+  padding: 0;
+  background: none;
+  border: 1px solid var(--couleur-or-sombre);
+  opacity: 0.6;
+  cursor: pointer;
+  transition: opacity var(--duree-courte), border-color var(--duree-courte);
+}
+
+.dossier__miniature img {
+  display: block;
+  width: 8rem;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+
+.dossier__miniature:hover,
+.dossier__miniature[aria-pressed="true"] {
+  border-color: var(--couleur-or);
+  opacity: 1;
+}
+
+.dossier__fleche {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  background: none;
+  border: 1px solid var(--couleur-or-sombre);
+  cursor: pointer;
+  transition: border-color var(--duree-courte);
+}
+
+.dossier__fleche::before {
+  width: 0.625rem;
+  height: 0.75rem;
+  background: var(--couleur-or);
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
+  content: "";
+}
+
+.dossier__fleche--precedente::before {
+  clip-path: polygon(100% 0, 0 50%, 100% 100%);
+}
+
+.dossier__fleche:hover {
+  border-color: var(--couleur-or);
+}
+
+:is(.dossier__fermer, .dossier__fleche, .dossier__miniature):focus-visible {
+  outline: 2px solid var(--couleur-accent);
+  outline-offset: 3px;
 }
 
 .pied {
@@ -1327,8 +1957,91 @@ img {
     display: none;
   }
 
-  .zone--apropos {
+  .zone--apropos,
+  .zone--projets {
     padding-right: var(--marge-page);
+  }
+
+  /* petit écran : la carte serait illisible ; les affiches s'affichent dépliées, en grille, sous le titre */
+  .projets__carte {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--espace-m);
+    position: relative;
+    top: auto;
+    left: auto;
+    order: 2;
+    width: auto;
+    height: auto;
+    margin-top: var(--espace-l);
+  }
+
+  .affiche {
+    position: relative;
+    top: auto;
+    left: auto;
+    width: auto;
+    pointer-events: auto;
+  }
+
+  .affiche__deroule {
+    clip-path: none;
+  }
+
+  .affiche__rouleau {
+    display: none;
+  }
+
+  .affiche__nom {
+    margin-top: 0.375rem;
+    font-size: 1rem;
+  }
+
+  .projets__onglets {
+    grid-column: 1 / -1;
+    justify-self: center;
+    gap: 1rem;
+    position: static;
+    padding: 0.375rem 0.75rem;
+    translate: none;
+  }
+
+  .projets__categorie {
+    min-width: 9rem;
+    font-size: 1.375rem;
+  }
+
+  .projets__fleche {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  .dossier {
+    width: calc(100% - 2 * var(--espace-xs));
+  }
+
+  .dossier__cadre {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--espace-l);
+    height: auto;
+    max-height: calc(100vh - 2 * var(--espace-xs));
+    padding: var(--espace-m);
+  }
+
+  .dossier__texte {
+    overflow: visible;
+  }
+
+  .dossier__galerie {
+    padding-right: 0;
+  }
+
+  .dossier__vue {
+    width: 100%;
+  }
+
+  .dossier__miniature img {
+    width: 4.5rem;
   }
 
   .apropos {
