@@ -90,6 +90,10 @@ const AJUSTEMENT = {
 const TRANSITION = {
   duree: 2.2,
   courbe: "power1.inOut",
+  // traversée de plusieurs sections d'un clic : la première accélère sans freiner, la suivante part
+  // lancée et ralentit jusqu'à l'arrivée, la caméra ne s'arrête jamais en route
+  courbeDepart: "power1.in",
+  courbeArrivee: "power1.out",
   repos: 700,
   // une transition déjà vue se rejoue plus vite ; un clic ou Échap la fait défiler en accéléré
   accelerationRevue: 1.4,
@@ -137,8 +141,8 @@ const TRANSITION = {
 };
 
 const PROJETS = {
-  // pièce élargie à droite (1856 px) pour que la carte soit au centre de l'image
-  image: { largeur: 1856, hauteur: 933 },
+  // pièce élargie à droite (2176 px) : carte au centre, et grande fenêtre entière pour passer vers le Contact
+  image: { largeur: 2176, hauteur: 933 },
   carte: { x: 603, y: 218, largeur: 649, hauteur: 385 },
   // gauche = (1 - largeurCarte) / 2 : la carte est centrée dans l'écran
   cadrage: { gauche: 0.25, largeurCarte: 0.5, centreY: 0.53 },
@@ -182,8 +186,59 @@ const PROJETS = {
     // la vitre allumée s'efface au début de l'approche (part de l'approche) et laisse voir la pièce
     fonduVitre: [0.04, 0.3],
     dureeVoile: 0.3,
-    dureeZoom: 3.6
+    dureeZoom: 3.6,
+    // la fin du ralentissement est imperceptible : le contenu apparaît dès ce temps avant l'arrêt (s),
+    // pendant que la scène animée se fond dans le décor fixe identique (pas de flottement à l'arrivée)
+    anticipation: 0.6
   }
+};
+
+// Fenêtres des projets : lecteur YouTube sans cookies de suivi tant que la vidéo n'est pas lancée
+const DOSSIERS = {
+  youtube: "https://www.youtube-nocookie.com/embed/"
+};
+
+const CONTACT = {
+  // durée d'affichage du message « Adresse copiée » (ms)
+  dureeMessage: 2500,
+  // transition Projets -> Contact : la caméra avance vers la fenêtre de droite de la pièce (vitre, en px
+  // de l'image) ; la vitre est transparente, la forêt lointaine se voit derrière dès le départ, puis,
+  // la fenêtre traversée (part de l'avancée), la vue de la forêt se pose avec un léger recul
+  vitre: { gauche: 1774, droite: 1965, haut: 79, bas: 472 },
+  // la caméra s'approche de la fenêtre jusqu'à ce que la vitre couvre cette part de la largeur de l'écran,
+  // puis la forêt envahit l'écran en fondu (part de l'approche) : on passe la vitre
+  largeurVitreFinale: 1.2,
+  passageVitre: [0.72, 1],
+  // la forêt garde le même cadrage de la vitre à l'arrivée (pas de recul) : l'approche occupe toute la transition
+  approche: 1,
+  reculForet: 1,
+  fond: "#05070d",
+  dureeVoile: 0.3,
+  duree: 3.4,
+  // étoiles du ciel du Contact : moins nombreuses et plus pâles que sur l'Accueil (le jour se lève),
+  // seulement dans le haut du ciel encore sombre (hauteurCiel en % de l'image de la forêt)
+  etoiles: { nombre: 48, hauteurCiel: 36, eclatMin: 0.55, eclatMax: 0.95, partScintillante: 0.8, dureeMin: 2.2, dureeMax: 5 },
+  // sorts lancés de temps en temps depuis la ruine (en pixels d'art de la forêt, 816 x 408) : l'aura se charge
+  // dans l'arche, puis l'énergie part vers le ciel (éclairs, colonne de lumière ou orbe qui éclate)
+  magie: {
+    ruine: { x: 582, haut: 221, base: 233 },
+    premierDelai: 2.5,
+    intervalleMin: 7,
+    intervalleMax: 14,
+    dureeCharge: 1.3,
+    // sorts joués en même temps au plus (automatique compris), pour les clics répétés
+    sortsMax: 5,
+    // clic maintenu : au-delà de ce temps (s) l'énergie s'accumule, pleine puissance après dureeChargeMax (s)
+    seuilMaintien: 0.18,
+    dureeChargeMax: 2.2,
+    couleurs: ["#5b3fc4", "#9a78ff", "#cdb8ff", "#f6f0ff"],
+    accent: "#8fe3ff"
+  }
+};
+
+// Événement envoyé à une fenêtre de projet quand elle s'ouvre
+const EVENEMENTS = {
+  ouvertureDossier: "dossier:ouverture"
 };
 
 const ONGLETS = {
@@ -250,6 +305,14 @@ const SELECTEURS = {
   dossierFermer: ".dossier__fermer",
   dossierImage: ".dossier__image",
   dossierVideo: ".dossier__video",
+  dossierYoutube: ".dossier__youtube",
+  contact: ".contact",
+  zoneContact: "#contact",
+  decorContact: ".contact__decor",
+  etoilesContact: ".contact__etoiles",
+  magieContact: ".contact__magie",
+  copierCourriel: "[data-copier]",
+  retourCourriel: ".contact__retour",
   dossierLegende: ".dossier__legende",
   dossierTitre: ".dossier__titre",
   dossierMiniature: ".dossier__miniature",
@@ -285,7 +348,7 @@ const SELECTEURS = {
   caseObjet: ".equipement__case",
   detailObjet: ".equipement__detail",
   ajustable: ".apropos",
-  contenuZone: ".zone__texte, .apropos__classes, .apropos__identite, .apropos__panneau:not([hidden]), .projets__consigne, .projets__carte"
+  contenuZone: ".zone__texte, .apropos__classes, .apropos__identite, .apropos__panneau:not([hidden]), .projets__consigne, .projets__carte, .contact__surtitre, .contact__courriel, .contact__accroche, .contact__ailleurs"
 };
 
 const CLASSES = {
@@ -297,6 +360,8 @@ const CLASSES = {
   etoileScintille: "hero__etoile--scintille",
   etoileBrillante: "hero__etoile--brillante",
   etoileEclat: "hero__etoile--eclat",
+  etoileContact: "contact__etoile",
+  etoileContactScintille: "contact__etoile--scintille",
   filante: "hero__filante",
   heroPassage: "hero--passage",
   decorCadre: "projets__decor--cadre",
@@ -329,6 +394,8 @@ let derivesBrume = [];
 let zoneDifferee = null;
 let destinationFinale = null;
 let poursuivreTransition = null;
+// vrai pendant qu'une transition est lancée dans la foulée d'une autre (traversée de plusieurs sections)
+let arriveeLancee = false;
 let transitionEnCours = null;
 let transitionSautee = false;
 let animationAnnonce = null;
@@ -658,14 +725,29 @@ function animerVie() {
   }).observe(toileVie);
 }
 
+// Étincelle du chemin : elle descend du feu d'une section à celui de la suivante (progression de 0 à 1).
+// Pilotée par le défilement, et par les transitions de caméra (la page y saute d'un coup à la fin).
+let etincelleActive = false;
+function placerEtincelle(index, progression) {
+  if (!etincelleActive || !etincelle) {
+    return;
+  }
+  const pas = etapes[1].offsetTop - etapes[0].offsetTop;
+  const trajet = pas - etapes[0].querySelector(SELECTEURS.feu).offsetHeight - etincelle.offsetHeight - 2;
+  gsap.set(etincelle, { y: index * pas + progression * trajet, opacity: progression > 0.02 && progression < 0.98 ? 1 : 0 });
+}
+
 function suivreSections(avecEtincelle) {
+  etincelleActive = avecEtincelle;
   sections.forEach((section, index) => {
     ScrollTrigger.create({
       trigger: section,
       start: "top center",
       end: "bottom center",
       onToggle: (etat) => {
-        if (etat.isActive) {
+        // pendant une transition, la page saute vers la section d'arrivée avant la fin de l'animation :
+        // son feu ne s'allume qu'à l'arrivée (terminerTransition), quand l'étincelle l'atteint
+        if (etat.isActive && !enTransition) {
           activerEtape(index);
         }
       }
@@ -678,9 +760,11 @@ function suivreSections(avecEtincelle) {
       start: "top top",
       end: "bottom top",
       onUpdate: (etat) => {
-        const pas = etapes[1].offsetTop - etapes[0].offsetTop;
-        const trajet = pas - etapes[0].querySelector(SELECTEURS.feu).offsetHeight - etincelle.offsetHeight - 2;
-        gsap.set(etincelle, { y: index * pas + etat.progress * trajet, opacity: etat.progress > 0.02 && etat.progress < 0.98 ? 1 : 0 });
+        // pendant une transition de caméra (ou une traversée de plusieurs sections par le menu),
+        // c'est la caméra qui fait avancer l'étincelle
+        if (!enTransition && destinationFinale === null) {
+          placerEtincelle(index, etat.progress);
+        }
       }
     });
   });
@@ -970,6 +1054,7 @@ function decouvrirSansAnnonce(zone) {
 
 function terminerTransition(zone) {
   enTransition = false;
+  activerEtape(sections.indexOf(zone));
   reposJusqua = performance.now() + TRANSITION.repos;
   const continuer = poursuitVers(zone);
   if (zoneDifferee && !zonesDecouvertes.has(zoneDifferee.id)) {
@@ -982,7 +1067,9 @@ function terminerTransition(zone) {
   }
   zoneDifferee = null;
   if (continuer && poursuivreTransition) {
+    arriveeLancee = true;
     poursuivreTransition();
+    arriveeLancee = false;
   } else {
     destinationFinale = null;
     transitionEnCours = null;
@@ -1003,8 +1090,10 @@ function descendre(ressources, apropos, decor) {
   const dejaVue = zonesDecouvertes.has(apropos.id);
   const camera = entrerDansCamera(ressources, apropos, 0);
   const etat = { avancee: 0 };
+  // si l'on va plus loin que l'À propos, la caméra ne freine pas en arrivant au château
+  const courbe = poursuitVers(apropos) ? TRANSITION.courbeDepart : TRANSITION.courbe;
   return gsap.timeline()
-    .to(etat, { avancee: 1, duration: TRANSITION.duree, ease: TRANSITION.courbe, onUpdate: () => dessinerCamera(camera, etat.avancee) })
+    .to(etat, { avancee: 1, duration: TRANSITION.duree, ease: courbe, onUpdate: () => { dessinerCamera(camera, etat.avancee); placerEtincelle(0, etat.avancee); } })
     .add(() => {
       const continuer = poursuitVers(apropos);
       gsap.set([decor, SELECTEURS.ajustable], { "--voile-decor": 0 });
@@ -1027,16 +1116,19 @@ function remonter(ressources, apropos, decor) {
   enTransition = true;
   const etat = { avancee: 1 };
   let camera = null;
+  // arrivée lancée depuis les Projets : pas de fondu d'attente, la caméra part déjà en mouvement
+  const lancee = arriveeLancee;
+  const voile = lancee ? 0 : TRANSITION.dureeVoile;
   return gsap.timeline()
-    .to(SELECTEURS.ajustable, { autoAlpha: 0, duration: TRANSITION.dureeVoile, ease: "power1.in" })
-    .to([decor, SELECTEURS.ajustable], { "--voile-decor": 0, duration: TRANSITION.dureeVoile, ease: "power1.in" }, "<")
+    .to(SELECTEURS.ajustable, { autoAlpha: 0, duration: voile, ease: "power1.in" })
+    .to([decor, SELECTEURS.ajustable], { "--voile-decor": 0, duration: voile, ease: "power1.in" }, "<")
     .add(() => {
       allerA(hero);
       camera = entrerDansCamera(ressources, apropos, 1);
       gsap.set(SELECTEURS.ajustable, { clearProps: "opacity,visibility" });
       gsap.set([decor, SELECTEURS.ajustable], { "--voile-decor": 1 });
     })
-    .to(etat, { avancee: 0, duration: TRANSITION.duree, ease: TRANSITION.courbe, onUpdate: () => dessinerCamera(camera, etat.avancee) })
+    .to(etat, { avancee: 0, duration: TRANSITION.duree, ease: lancee ? TRANSITION.courbeArrivee : TRANSITION.courbe, onUpdate: () => { dessinerCamera(camera, etat.avancee); placerEtincelle(0, etat.avancee); } })
     .add(() => {
       sortirDeCamera(camera);
       terminerTransition(hero);
@@ -1243,12 +1335,35 @@ function initialiserDossiers() {
     const titre = dossier.querySelector(SELECTEURS.dossierTitre).textContent;
     const miniatures = [...dossier.querySelectorAll(SELECTEURS.dossierMiniature)];
     let courante = 0;
-    // une miniature peut montrer une vidéo (data-video) : elle remplace alors l'image, muette, en boucle
+    // une miniature peut montrer une vidéo (data-video) : elle remplace alors l'image, muette, en boucle ;
+    // ou une vidéo YouTube (data-youtube) : le lecteur n'est chargé qu'à ce moment-là, et vidé quand on
+    // change d'élément ou qu'on ferme la fenêtre (la lecture s'arrête)
     const video = dossier.querySelector(SELECTEURS.dossierVideo);
+    const lecteur = dossier.querySelector(SELECTEURS.dossierYoutube);
+    const viderLecteur = () => {
+      if (lecteur) {
+        lecteur.removeAttribute("src");
+        lecteur.hidden = true;
+      }
+    };
     const montrer = (index) => {
       courante = (index + miniatures.length) % miniatures.length;
       const miniature = miniatures[courante];
       miniatures.forEach((autre) => autre.setAttribute("aria-pressed", autre === miniature));
+      if (lecteur && miniature.dataset.youtube) {
+        const adresse = `${DOSSIERS.youtube}${miniature.dataset.youtube}?rel=0`;
+        if (lecteur.getAttribute("src") !== adresse) {
+          lecteur.src = adresse;
+        }
+        lecteur.hidden = false;
+        image.hidden = true;
+        video?.pause();
+        if (video) {
+          video.hidden = true;
+        }
+        return;
+      }
+      viderLecteur();
       const enVideo = Boolean(video && miniature.dataset.video);
       image.hidden = enVideo;
       if (video) {
@@ -1273,7 +1388,12 @@ function initialiserDossiers() {
         gsap.fromTo(enVideo ? video : image, { opacity: 0.4 }, { opacity: 1, duration: 0.25, ease: "power1.out", clearProps: "opacity" });
       }
     };
-    dossier.addEventListener("close", () => video?.pause());
+    dossier.addEventListener("close", () => {
+      video?.pause();
+      viderLecteur();
+    });
+    // à chaque ouverture, la galerie repart de son premier élément (la vidéo, s'il y en a une)
+    dossier.addEventListener(EVENEMENTS.ouvertureDossier, () => montrer(0));
     miniatures.forEach((miniature, index) => miniature.addEventListener("click", () => montrer(index)));
     dossier.querySelector(SELECTEURS.dossierPrecedente).addEventListener("click", () => montrer(courante - 1));
     dossier.querySelector(SELECTEURS.dossierSuivante).addEventListener("click", () => montrer(courante + 1));
@@ -1298,10 +1418,8 @@ function initialiserDossiers() {
         dossier.close();
       }
     });
-    dossier.addEventListener("close", () => {
-      racine.classList.remove(CLASSES.dossierOuvert);
-      montrer(0);
-    });
+    // la galerie est remise au début à l'ouverture (et non à la fermeture, qui rechargerait la vidéo)
+    dossier.addEventListener("close", () => racine.classList.remove(CLASSES.dossierOuvert));
   });
   document.addEventListener("click", (evenement) => {
     const declencheur = evenement.target.closest(SELECTEURS.ouvrirDossier);
@@ -1311,6 +1429,7 @@ function initialiserDossiers() {
     }
     racine.classList.add(CLASSES.dossierOuvert);
     dossier.showModal();
+    dossier.dispatchEvent(new Event(EVENEMENTS.ouvertureDossier));
     // le focus va au bouton de fermeture, pas au cadre qui peut défiler
     dossier.querySelector(SELECTEURS.dossierFermer).focus();
     if (mouvementAutorise) {
@@ -1327,8 +1446,9 @@ function initialiserDossiers() {
 
 async function preparerRessourcesProjets(decorApropos) {
   const source = getComputedStyle(decorApropos).backgroundImage.match(/url\("?(.*?)"?\)/)[1];
-  const [chateau, piece] = await Promise.all([source, source.replace(/a-propos\/[^/]+$/, "projets/piece.webp")].map(chargerImage));
-  return { ...percerFenetre(chateau), piece, bougies: document.querySelector(SELECTEURS.bougies) };
+  const dossier = (chemin) => source.replace(/a-propos\/[^/]+$/, chemin);
+  const [chateau, piece, foret] = await Promise.all([source, dossier("projets/piece.webp"), dossier("contact/foret.webp")].map(chargerImage));
+  return { ...percerFenetre(chateau), piece, foret, bougies: document.querySelector(SELECTEURS.bougies) };
 }
 
 function estVitre(r, v, b) {
@@ -1500,6 +1620,8 @@ function dessinerPassage(scene, ressources, avancee) {
   // fond bleu nuit plutôt que transparent : le décor de l'À propos ne peut jamais apparaître derrière
   contexte.fillStyle = passage.fond;
   contexte.fillRect(0, 0, largeur, hauteur);
+  // la forêt à l'aube derrière la vitre transparente de la grande fenêtre (même cadrage que le fond de la section)
+  dessinerCouverture(contexte, ressources.foret, largeur, hauteur);
   contexte.drawImage(piece, coin.x, coin.y, taille.largeur, taille.hauteur);
   // les bougies de la pièce brûlent déjà pendant qu'on passe la fenêtre
   const bougies = ressources.bougies;
@@ -1536,9 +1658,12 @@ function descendreProjets(ressources, apropos, projets) {
   const dejaVue = zonesDecouvertes.has(projets.id);
   const etat = { avancee: 0 };
   let scene = null;
+  // arrivée lancée depuis l'Accueil : pas de fondu d'attente, la caméra repart sans s'arrêter
+  const lancee = arriveeLancee;
+  const voile = lancee ? 0 : passage.dureeVoile;
   return gsap.timeline()
-    .to(contenuApropos, { autoAlpha: 0, duration: passage.dureeVoile, ease: "power1.in" })
-    .to([decorApropos, contenuApropos], { "--voile-decor": 0, duration: passage.dureeVoile, ease: "power1.in" }, "<")
+    .to(contenuApropos, { autoAlpha: 0, duration: voile, ease: "power1.in" })
+    .to([decorApropos, contenuApropos], { "--voile-decor": 0, duration: voile, ease: "power1.in" }, "<")
     .add(() => {
       scene = preparerScene(toile);
       dessinerPassage(scene, ressources, 0);
@@ -1552,15 +1677,30 @@ function descendreProjets(ressources, apropos, projets) {
       gsap.set(contenuApropos, { clearProps: "opacity,visibility" });
       gsap.set([decorApropos, contenuApropos], { "--voile-decor": 1 });
     })
-    .to(etat, { avancee: 1, duration: passage.dureeZoom, ease: courbePassage, onUpdate: () => dessinerPassage(scene, ressources, etat.avancee) })
+    .addLabel("zoom")
+    .to(etat, { avancee: 1, duration: passage.dureeZoom, ease: courbeEnchainee(lancee, poursuitVers(projets), courbePassage), onUpdate: () => { dessinerPassage(scene, ressources, etat.avancee); placerEtincelle(1, etat.avancee); } }, "zoom")
     .add(() => {
-      gsap.set(toile, { autoAlpha: 0 });
+      // arrivée anticipée (sauf si l'on continue vers le Contact : la pièce reste sans voile ni contenu)
+      if (poursuitVers(projets)) {
+        return;
+      }
+      gsap.to(toile, { autoAlpha: 0, duration: passage.anticipation, ease: "none" });
       gsap.to(projets, { "--voile-decor": 1, duration: TRANSITION.dureeVoileDecor, ease: "power1.out" });
       if (dejaVue) {
         gsap.to(contenuProjets, { autoAlpha: 1, duration: TRANSITION.dureeVoileDecor, ease: "power1.out", clearProps: "opacity,visibility" });
+      } else if (zoneDifferee === projets) {
+        zonesDecouvertes.add(projets.id);
+        zoneDifferee = null;
+        annoncerZone(projets);
+      }
+    }, `zoom+=${passage.dureeZoom - passage.anticipation}`)
+    .add(() => {
+      gsap.set(toile, { autoAlpha: 0 });
+      if (poursuitVers(projets)) {
+        gsap.set(contenuProjets, { autoAlpha: 0 });
       }
       terminerTransition(projets);
-    });
+    }, "zoom+=" + passage.dureeZoom);
 }
 
 function remonterApropos(ressources, apropos, projets) {
@@ -1569,9 +1709,12 @@ function remonterApropos(ressources, apropos, projets) {
   const { toile, decorApropos, contenuApropos, contenuProjets } = elementsDuPassage(apropos, projets);
   const etat = { avancee: 1 };
   let scene = null;
+  // arrivée lancée depuis le Contact : pas de fondu d'attente
+  const lancee = arriveeLancee;
+  const voile = lancee ? 0 : passage.dureeVoile;
   return gsap.timeline()
-    .to(contenuProjets, { autoAlpha: 0, duration: passage.dureeVoile, ease: "power1.in" })
-    .to(projets, { "--voile-decor": 0, duration: passage.dureeVoile, ease: "power1.in" }, "<")
+    .to(contenuProjets, { autoAlpha: 0, duration: voile, ease: "power1.in" })
+    .to(projets, { "--voile-decor": 0, duration: voile, ease: "power1.in" }, "<")
     .add(() => {
       scene = preparerScene(toile);
       dessinerPassage(scene, ressources, 1);
@@ -1582,7 +1725,8 @@ function remonterApropos(ressources, apropos, projets) {
       gsap.set(contenuProjets, { clearProps: "opacity,visibility" });
       gsap.set(projets, { "--voile-decor": 1 });
     })
-    .to(etat, { avancee: 0, duration: passage.dureeZoom, ease: courbePassageRetour, onUpdate: () => dessinerPassage(scene, ressources, etat.avancee) })
+    // si l'on remonte plus loin que l'À propos, la caméra ne freine pas en ressortant de la fenêtre
+    .to(etat, { avancee: 0, duration: passage.dureeZoom, ease: courbeEnchainee(lancee, poursuitVers(apropos), courbePassageRetour), onUpdate: () => { dessinerPassage(scene, ressources, etat.avancee); placerEtincelle(1, etat.avancee); } })
     .add(() => {
       gsap.set(toile, { autoAlpha: 0 });
       if (!poursuitVers(apropos)) {
@@ -1593,14 +1737,166 @@ function remonterApropos(ressources, apropos, projets) {
     });
 }
 
+// Courbe d'une transition selon qu'elle arrive lancée (dans la foulée d'une autre) et/ou qu'elle se
+// poursuit vers une section plus loin : la caméra ne s'arrête jamais en route.
+function courbeEnchainee(lancee, poursuit, normale) {
+  if (lancee && poursuit) {
+    return "none";
+  }
+  if (lancee) {
+    return TRANSITION.courbeArrivee;
+  }
+  if (poursuit) {
+    return TRANSITION.courbeDepart;
+  }
+  return normale;
+}
+
+// ---------- Transition Projets <-> Contact : par la fenêtre de la pièce, jusqu'à la vue de la forêt ----------
+
+async function preparerRessourcesContact(decorProjets, decorContact) {
+  const adresse = (element) => getComputedStyle(element).backgroundImage.match(/url\("?(.*?)"?\)/)[1];
+  const [piece, foret] = await Promise.all([adresse(decorProjets), adresse(decorContact)].map(chargerImage));
+  return { piece, foret };
+}
+
+// Dessine une image qui couvre toute la scène, centrée (comme un fond CSS « cover »), éventuellement agrandie.
+function dessinerCouverture(contexte, image, largeur, hauteur, agrandissement = 1) {
+  const k = Math.max(largeur / image.width, hauteur / image.height) * agrandissement;
+  contexte.drawImage(image, (largeur - image.width * k) / 2, (hauteur - image.height * k) / 2, image.width * k, image.height * k);
+}
+
+// avancee 0 : la pièce au cadrage de la section Projets ; avancee 1 : la forêt au cadrage du Contact.
+function dessinerVersContact(scene, ressources, avancee) {
+  const { contexte, largeur, hauteur } = scene;
+  const { vitre, approche, reculForet, fond, largeurVitreFinale, passageVitre } = CONTACT;
+  const { piece, foret } = ressources;
+  // la forêt est lointaine : vue par la vitre, elle garde la même échelle pendant que la fenêtre grandit
+  const dessinerForet = (recul) => dessinerCouverture(contexte, foret, largeur, hauteur, recul);
+  contexte.imageSmoothingEnabled = false;
+  contexte.globalAlpha = 1;
+  contexte.fillStyle = fond;
+  contexte.fillRect(0, 0, largeur, hauteur);
+  // la vitre de la pièce est transparente : la forêt est derrière dès le départ (même vue que dans la section)
+  dessinerForet(reculForet);
+  if (avancee >= approche) {
+    // la fenêtre traversée : la vue de la forêt se pose en reculant légèrement
+    const q = (avancee - approche) / (1 - approche);
+    dessinerForet(gsap.utils.interpolate(reculForet, 1, 1 - (1 - q) ** 2));
+    return;
+  }
+  // la caméra avance vers la fenêtre (zoom régulier) et pivote vers elle ; la pièce ne sort jamais du cadre
+  const p = avancee / approche;
+  const fin = cadragePiece(largeur, hauteur);
+  const largeurVitre = vitre.droite - vitre.gauche;
+  const kVitre = largeur * largeurVitreFinale / largeurVitre;
+  const k = fin.k * (kVitre / fin.k) ** p;
+  const cible = { x: (vitre.gauche + vitre.droite) / 2, y: (vitre.haut + vitre.bas) / 2 };
+  // la caméra pivote d'abord vers la fenêtre (recentrage rapide), puis avance vers elle
+  const recentrage = 1 - (1 - p) ** 3;
+  const centre = {
+    x: gsap.utils.interpolate(fin.x + cible.x * fin.k, largeur / 2, recentrage),
+    y: gsap.utils.interpolate(fin.y + cible.y * fin.k, hauteur / 2, recentrage)
+  };
+  const coin = {
+    x: gsap.utils.clamp(largeur - piece.width * k, 0, centre.x - cible.x * k),
+    y: gsap.utils.clamp(hauteur - piece.height * k, 0, centre.y - cible.y * k)
+  };
+  contexte.drawImage(piece, coin.x, coin.y, piece.width * k, piece.height * k);
+  // on passe la vitre : la forêt envahit tout l'écran et rejoint sans saut la vue qui se pose ensuite
+  const passage = lisser(passageVitre[0], passageVitre[1], p);
+  if (passage > 0) {
+    contexte.globalAlpha = passage;
+    dessinerForet(reculForet);
+  }
+  contexte.globalAlpha = 1;
+}
+function elementsVersContact(projets, contact) {
+  return {
+    toile: document.querySelector(SELECTEURS.passageProjets),
+    contenuProjets: [projets.querySelector(SELECTEURS.contenuProjets), projets.querySelector(SELECTEURS.carteProjets)],
+    contenuContact: contact.querySelector(SELECTEURS.contact)
+  };
+}
+
+function descendreContact(ressources, projets, contact) {
+  enTransition = true;
+  const { toile, contenuProjets, contenuContact } = elementsVersContact(projets, contact);
+  const dejaVue = zonesDecouvertes.has(contact.id);
+  const lancee = arriveeLancee;
+  const voile = lancee ? 0 : CONTACT.dureeVoile;
+  const etat = { avancee: 0 };
+  let scene = null;
+  return gsap.timeline()
+    .to(contenuProjets, { autoAlpha: 0, duration: voile, ease: "power1.in" })
+    .to(projets, { "--voile-decor": 0, duration: voile, ease: "power1.in" }, "<")
+    .add(() => {
+      scene = preparerScene(toile);
+      dessinerVersContact(scene, ressources, 0);
+      gsap.set(toile, { autoAlpha: 1 });
+      gsap.set(contact, { "--voile-decor": 0 });
+      if (dejaVue) {
+        gsap.set(contenuContact, { autoAlpha: 0 });
+      }
+      allerA(contact);
+      gsap.set(contenuProjets, { clearProps: "opacity,visibility" });
+      gsap.set(projets, { "--voile-decor": 1 });
+    })
+    .to(etat, { avancee: 1, duration: CONTACT.duree, ease: courbeEnchainee(lancee, false, TRANSITION.courbe), onUpdate: () => { dessinerVersContact(scene, ressources, etat.avancee); placerEtincelle(2, etat.avancee); } })
+    .add(() => {
+      gsap.set(toile, { autoAlpha: 0 });
+      gsap.to(contact, { "--voile-decor": 1, duration: TRANSITION.dureeVoileDecor, ease: "power1.out" });
+      if (dejaVue) {
+        gsap.to(contenuContact, { autoAlpha: 1, duration: TRANSITION.dureeVoileDecor, ease: "power1.out", clearProps: "opacity,visibility" });
+      }
+      terminerTransition(contact);
+    });
+}
+
+function remonterProjets(ressources, projets, contact) {
+  enTransition = true;
+  const { toile, contenuProjets, contenuContact } = elementsVersContact(projets, contact);
+  const poursuit = poursuitVers(projets);
+  const etat = { avancee: 1 };
+  let scene = null;
+  return gsap.timeline()
+    .to(contenuContact, { autoAlpha: 0, duration: CONTACT.dureeVoile, ease: "power1.in" })
+    .to(contact, { "--voile-decor": 0, duration: CONTACT.dureeVoile, ease: "power1.in" }, "<")
+    .add(() => {
+      scene = preparerScene(toile);
+      dessinerVersContact(scene, ressources, 1);
+      gsap.set(toile, { autoAlpha: 1 });
+      gsap.set(contenuProjets, { autoAlpha: 0 });
+      gsap.set(projets, { "--voile-decor": 0 });
+      allerA(projets);
+      placerPiece();
+      gsap.set(contenuContact, { clearProps: "opacity,visibility" });
+      gsap.set(contact, { "--voile-decor": 1 });
+    })
+    .to(etat, { avancee: 0, duration: CONTACT.duree, ease: courbeEnchainee(false, poursuit, TRANSITION.courbe), onUpdate: () => { dessinerVersContact(scene, ressources, etat.avancee); placerEtincelle(2, etat.avancee); } })
+    .add(() => {
+      gsap.set(toile, { autoAlpha: 0 });
+      if (!poursuit) {
+        gsap.to(projets, { "--voile-decor": 1, duration: TRANSITION.dureeVoileDecor, ease: "power1.out" });
+        gsap.to(contenuProjets, { autoAlpha: 1, duration: TRANSITION.dureeVoileDecor, ease: "power1.out", clearProps: "opacity,visibility" });
+      }
+      terminerTransition(projets);
+    });
+}
+
 function activerPassage() {
   const apropos = document.querySelector(SELECTEURS.zoneApropos);
   const projets = document.querySelector(SELECTEURS.zoneProjets);
   const decor = apropos.querySelector(SELECTEURS.decorApropos);
   let ressources = null;
   let ressourcesProjets = null;
+  let ressourcesContact = null;
+  const contact = document.querySelector(SELECTEURS.zoneContact);
   preparerRessources(decor).then((pretes) => { ressources = pretes; });
   preparerRessourcesProjets(decor).then((pretes) => { ressourcesProjets = pretes; });
+  if (contact) {
+    preparerRessourcesContact(projets.querySelector(SELECTEURS.decorProjets), contact.querySelector(SELECTEURS.decorContact)).then((pretes) => { ressourcesContact = pretes; });
+  }
   const enHaut = (zone) => Math.abs(window.scrollY - zone.offsetTop) < 8;
   const tientDansEcran = (zone) => zone.offsetHeight <= window.innerHeight + 4;
   // les quatre passages : d'où on part, dans quel sens, vers quelle section
@@ -1608,11 +1904,13 @@ function activerPassage() {
     { versLeBas: true, vers: apropos, depuis: () => window.scrollY < hero.offsetTop + 8, pret: () => ressources, lancer: () => descendre(ressources, apropos, decor) },
     { versLeBas: false, vers: hero, depuis: () => enHaut(apropos), pret: () => ressources, lancer: () => remonter(ressources, apropos, decor) },
     { versLeBas: true, vers: projets, depuis: () => enHaut(apropos) && tientDansEcran(apropos), pret: () => ressourcesProjets, lancer: () => descendreProjets(ressourcesProjets, apropos, projets) },
-    { versLeBas: false, vers: apropos, depuis: () => enHaut(projets), pret: () => ressourcesProjets, lancer: () => remonterApropos(ressourcesProjets, apropos, projets) }
+    { versLeBas: false, vers: apropos, depuis: () => enHaut(projets), pret: () => ressourcesProjets, lancer: () => remonterApropos(ressourcesProjets, apropos, projets) },
+    { versLeBas: true, vers: contact, depuis: () => enHaut(projets), pret: () => ressourcesContact, lancer: () => descendreContact(ressourcesContact, projets, contact) },
+    { versLeBas: false, vers: projets, depuis: () => enHaut(contact), pret: () => ressourcesContact, lancer: () => remonterProjets(ressourcesContact, projets, contact) }
   ];
   const trouver = (filtre) => passages.find((passage) => filtre(passage) && passage.depuis());
   // premier passage à jouer pour aller vers une section, même non voisine (clic du menu)
-  const ordre = [hero, apropos, projets];
+  const ordre = [hero, apropos, projets, contact];
   const etapeVers = (cible) => {
     const ici = ordre.findIndex(enHaut);
     const la = ordre.indexOf(cible);
@@ -1732,7 +2030,14 @@ function annoncerZone(zone) {
   const titreZone = zone.querySelector(SELECTEURS.zoneTitre);
   cloreAnnonce();
   titreEnAttente = titreZone;
-  annonceTitre.textContent = titreZone.textContent;
+  // même structure que le titre (retours à la ligne, mots en couleur) : le glissement tombe pile sur lui
+  annonceTitre.innerHTML = titreZone.innerHTML;
+  // même interligne et même espacement (relatifs à la taille) : l'échelle calculée sur la hauteur est exacte,
+  // le titre de l'annonce se pose donc sur le vrai sans changer de taille ni sauter
+  const style = getComputedStyle(titreZone);
+  const taille = parseFloat(style.fontSize);
+  annonceTitre.style.lineHeight = String(parseFloat(style.lineHeight) / taille || "");
+  annonceTitre.style.letterSpacing = style.letterSpacing === "normal" ? "" : `${parseFloat(style.letterSpacing) / taille}em`;
   gsap.set(annonceTitre, { x: 0, y: 0, scale: 1 });
   animationAnnonce = gsap.timeline()
     .set(annonce, { autoAlpha: 1 })
@@ -1977,7 +2282,30 @@ function ajusterProjets() {
     return;
   }
   const apropos = document.querySelector(SELECTEURS.ajustable);
-  panneau.style.setProperty("--echelle", apropos?.style.getPropertyValue("--echelle") || 1);
+  const echelle = apropos?.style.getPropertyValue("--echelle") || 1;
+  panneau.style.setProperty("--echelle", echelle);
+  // le Contact suit la même échelle : son titre est lui aussi au même endroit que celui de l'À propos
+  document.querySelector(SELECTEURS.contact)?.style.setProperty("--echelle", echelle);
+}
+
+// Contact : le bouton « Copier l'adresse » copie l'e-mail et le confirme (message lu par les lecteurs d'écran)
+function initialiserContact() {
+  const bouton = document.querySelector(SELECTEURS.copierCourriel);
+  const retour = document.querySelector(SELECTEURS.retourCourriel);
+  if (!bouton || !retour) {
+    return;
+  }
+  let minuteur = null;
+  bouton.addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(bouton.dataset.copier);
+      retour.textContent = bouton.dataset.copie;
+    } catch {
+      retour.textContent = bouton.dataset.erreur;
+    }
+    clearTimeout(minuteur);
+    minuteur = setTimeout(() => { retour.textContent = ""; }, CONTACT.dureeMessage);
+  });
 }
 
 function suivreRedimensionnement() {
@@ -1991,12 +2319,445 @@ function suivreRedimensionnement() {
   });
 }
 
+// Étoiles du ciel de l'aube, dans le Contact : quelques pixels pâles, la plupart scintillent lentement.
+function creerEtoilesContact() {
+  const conteneur = document.querySelector(SELECTEURS.etoilesContact);
+  if (!conteneur) {
+    return;
+  }
+  const { nombre, hauteurCiel, eclatMin, eclatMax, partScintillante, dureeMin, dureeMax } = CONTACT.etoiles;
+  for (let i = 0; i < nombre; i++) {
+    const etoile = document.createElement("span");
+    etoile.className = CLASSES.etoileContact;
+    etoile.style.setProperty("--x", `${(Math.random() * 100).toFixed(2)}%`);
+    // plus rares près de l'horizon : la lueur de l'aube les efface
+    etoile.style.setProperty("--y", `${(1 + hauteurCiel * Math.random() ** 1.4).toFixed(2)}%`);
+    etoile.style.setProperty("--eclat", gsap.utils.random(eclatMin, eclatMax).toFixed(2));
+    if (Math.random() < partScintillante) {
+      etoile.classList.add(CLASSES.etoileContactScintille);
+      etoile.style.setProperty("--duree", `${gsap.utils.random(dureeMin, dureeMax).toFixed(2)}s`);
+      etoile.style.setProperty("--delai", `${(-Math.random() * dureeMax).toFixed(2)}s`);
+    }
+    conteneur.append(etoile);
+  }
+}
+
+// ---------- Magie dans la ruine du Contact ----------
+// Dessin au pixel d'art : chaque pixel est allumé ou non selon un seuil de tramage (Bayer 4 x 4), comme
+// les dégradés de la forêt ; les couleurs s'additionnent au ciel (lueur magique) sans aucun flou.
+const TRAME = [[0, 8, 2, 10], [12, 4, 14, 6], [3, 11, 1, 9], [15, 7, 13, 5]];
+
+function creerPinceauMagie(contexte) {
+  const { couleurs } = CONTACT.magie;
+  const pixel = (x, y, intensite, couleur) => {
+    const px = Math.round(x);
+    const py = Math.round(y);
+    if (intensite <= (TRAME[py & 3][px & 3] + 0.5) / 16) {
+      return;
+    }
+    contexte.fillStyle = couleur || couleurs[Math.min(couleurs.length - 1, Math.floor(intensite * couleurs.length))];
+    contexte.fillRect(px, py, 1, 1);
+  };
+  // disque lumineux : plus intense au centre, tramé vers le bord
+  const halo = (cx, cy, rayon, intensite) => {
+    for (let y = Math.floor(cy - rayon); y <= cy + rayon; y++) {
+      for (let x = Math.floor(cx - rayon); x <= cx + rayon; x++) {
+        const d = Math.hypot(x - cx, y - cy) / rayon;
+        if (d < 1) {
+          pixel(x, y, intensite * (1 - d) ** 1.3);
+        }
+      }
+    }
+  };
+  // trait d'un pixel (Bresenham), avec un liseré tramé de part et d'autre
+  const trait = (a, b, intensite) => {
+    const pas = Math.max(Math.abs(b.x - a.x), Math.abs(b.y - a.y), 1);
+    for (let i = 0; i <= pas; i++) {
+      const x = a.x + (b.x - a.x) * i / pas;
+      const y = a.y + (b.y - a.y) * i / pas;
+      pixel(x, y, intensite);
+      pixel(x - 1, y, intensite * 0.45);
+      pixel(x + 1, y, intensite * 0.45);
+    }
+  };
+  // lueur douce (dégradé radial) : la lumière que le sort projette sur le ciel, sous les pixels
+  const lueur = (cx, cy, rayon, opacite) => {
+    if (opacite <= 0.01) {
+      return;
+    }
+    const degrade = contexte.createRadialGradient(cx, cy, 0, cx, cy, rayon);
+    degrade.addColorStop(0, `rgb(154 120 255 / ${opacite})`);
+    degrade.addColorStop(1, "rgb(91 63 196 / 0)");
+    contexte.fillStyle = degrade;
+    contexte.fillRect(cx - rayon, cy - rayon, rayon * 2, rayon * 2);
+  };
+  return { pixel, halo, trait, lueur };
+}
+
+// éclair : ligne brisée qui monte de l'arche vers le ciel, avec quelques branches
+function tracerEclair(depart, hauteur = gsap.utils.random(110, 190)) {
+  const points = [{ ...depart }];
+  const branches = [];
+  const derive = gsap.utils.random(-0.35, 0.35);
+  let point = { ...depart };
+  while (depart.y - point.y < hauteur) {
+    point = { x: point.x + gsap.utils.random(-4, 4, 1) + derive * 5, y: point.y - gsap.utils.random(3, 7, 1) };
+    points.push(point);
+    if (Math.random() < 0.18) {
+      const sens = Math.random() < 0.5 ? -1 : 1;
+      const branche = [{ ...point }];
+      for (let i = 0; i < gsap.utils.random(3, 6, 1); i++) {
+        const dernier = branche[branche.length - 1];
+        branche.push({ x: dernier.x + sens * gsap.utils.random(2, 5, 1), y: dernier.y - gsap.utils.random(1, 4, 1) });
+      }
+      branches.push(branche);
+    }
+  }
+  return { points, branches };
+}
+
+// un sort : la charge (commune), puis une libération tirée au hasard ; renvoie false une fois fini
+function creerSort(pinceau, particules) {
+  const { ruine, dureeCharge, couleurs, accent } = CONTACT.magie;
+  const arche = { x: ruine.x, y: (ruine.haut + ruine.base) / 2 };
+  const sommet = { x: ruine.x, y: ruine.haut - 1 };
+  const types = ["eclairs", "colonne", "orbe"];
+  const type = types[Math.floor(Math.random() * types.length)];
+  const eclairs = Array.from({ length: gsap.utils.random(2, 3, 1) }, () => tracerEclair(sommet));
+  const dureeLiberation = type === "orbe" ? 1.6 : 1.2;
+  let eclate = false;
+  const etincelle = (x, y, vx, vy, duree, couleur) => particules.push({ x, y, vx, vy, vie: 0, duree, couleur });
+
+  return (t, dt) => {
+    const liberation = t - dureeCharge;
+    // aura : grossit pendant la charge en vacillant, puis retombe après la libération
+    const charge = Math.min(1, t / dureeCharge);
+    const retombee = liberation > 0 ? Math.max(0, 1 - liberation / dureeLiberation) : 1;
+    const vacille = 0.75 + 0.25 * Math.sin(t * 38) * Math.random();
+    pinceau.lueur(arche.x, arche.y, 10 + 22 * charge, 0.35 * charge * vacille * retombee);
+    pinceau.halo(arche.x, arche.y, 3 + 7 * charge ** 1.5, (0.35 + 0.65 * charge) * vacille * retombee);
+    if (liberation < 0 && Math.random() < dt * 30) {
+      etincelle(arche.x + gsap.utils.random(-6, 6), ruine.base, gsap.utils.random(-3, 3), gsap.utils.random(-28, -12), gsap.utils.random(0.5, 1.1));
+    }
+    if (liberation < 0) {
+      return true;
+    }
+    const p = liberation / dureeLiberation;
+    if (type === "eclairs") {
+      // chaque éclair claque plusieurs fois (scintillement), le ciel s'éclaire brièvement autour
+      eclairs.forEach((eclair, i) => {
+        const visible = p < 0.55 && Math.sin((liberation + i * 0.07) * 60) > -0.2;
+        if (visible) {
+          const force = 1 - p / 0.55;
+          eclair.points.slice(1).forEach((point, j) => pinceau.trait(eclair.points[j], point, force));
+          eclair.branches.forEach((branche) => branche.slice(1).forEach((point, j) => pinceau.trait(branche[j], point, force * 0.7)));
+        }
+      });
+      pinceau.lueur(sommet.x, sommet.y - 70, 90, 0.3 * Math.max(0, 1 - p * 2.5));
+    } else if (type === "colonne") {
+      // colonne de lumière qui pulse, des étincelles montent en spirale autour
+      const force = Math.sin(Math.PI * Math.min(1, p * 1.2)) * (0.85 + 0.15 * Math.sin(liberation * 30));
+      for (let y = sommet.y; y > 0; y--) {
+        const attenuation = force * (1 - (sommet.y - y) / sommet.y) ** 0.6;
+        for (let dx = -3; dx <= 3; dx++) {
+          pinceau.pixel(sommet.x + dx, y, attenuation * (1 - Math.abs(dx) / 4));
+        }
+      }
+      if (Math.random() < dt * 40) {
+        etincelle(sommet.x + gsap.utils.random(-5, 5), sommet.y, 0, gsap.utils.random(-70, -40), gsap.utils.random(0.8, 1.6), Math.random() < 0.3 ? accent : null);
+      }
+    } else {
+      // orbe : monte en ralentissant, puis éclate en gerbe d'étincelles
+      const montee = Math.min(1, p / 0.55);
+      const orbe = { x: sommet.x, y: sommet.y - 95 * (1 - (1 - montee) ** 3) };
+      if (montee < 1) {
+        pinceau.lueur(orbe.x, orbe.y, 22, 0.35);
+        pinceau.halo(orbe.x, orbe.y, 6, 1);
+        if (Math.random() < dt * 50) {
+          etincelle(orbe.x + gsap.utils.random(-2, 2), orbe.y + 3, gsap.utils.random(-4, 4), gsap.utils.random(5, 15), 0.6);
+        }
+      } else if (!eclate) {
+        eclate = true;
+        for (let i = 0; i < 46; i++) {
+          const angle = Math.random() * Math.PI * 2;
+          const vitesse = gsap.utils.random(15, 55);
+          etincelle(orbe.x, orbe.y, Math.cos(angle) * vitesse, Math.sin(angle) * vitesse, gsap.utils.random(0.8, 1.5), Math.random() < 0.35 ? accent : couleurs[gsap.utils.random(1, 3, 1)]);
+        }
+      } else {
+        pinceau.lueur(orbe.x, orbe.y, 40, 0.4 * Math.max(0, 1 - (p - 0.55) * 4));
+      }
+    }
+    return p < 1;
+  };
+}
+
+// sort lancé au clic : une comète part de la ruine, monte dans le ciel puis s'abat sur le point visé (en
+// pixels d'art) et y éclate. puissance (0 à 1) : l'énergie accumulée en maintenant le clic ; elle grossit
+// la comète, accélère le vol, multiplie les éclairs, les ondes de choc et les étincelles de l'impact.
+// dejaCharge : l'aura a déjà été chargée pendant le maintien, la comète part presque aussitôt.
+// Renvoie false une fois fini.
+function creerSortCible(pinceau, particules, cible, puissance = 0, dejaCharge = false) {
+  const { ruine, dureeCharge, couleurs, accent } = CONTACT.magie;
+  const p = puissance;
+  const charge = dejaCharge ? 0.12 : dureeCharge * 0.6;
+  const vol = 1.25 - 0.3 * p;
+  const impact = 0.9 + 0.7 * p;
+  const arche = { x: ruine.x, y: (ruine.haut + ruine.base) / 2 };
+  const depart = { x: ruine.x, y: ruine.haut - 1 };
+  // trajectoire en cloche : monte haut au-dessus de la ruine, redescend en piqué sur la cible
+  const sommetVol = Math.min(depart.y, cible.y) - gsap.utils.random(120, 160) - 50 * p;
+  const p1 = { x: depart.x, y: sommetVol };
+  const p2 = { x: cible.x, y: sommetVol };
+  const bezier = (u) => {
+    const v = 1 - u;
+    return {
+      x: v ** 3 * depart.x + 3 * v * v * u * p1.x + 3 * v * u * u * p2.x + u ** 3 * cible.x,
+      y: v ** 3 * depart.y + 3 * v * v * u * p1.y + 3 * v * u * u * p2.y + u ** 3 * cible.y
+    };
+  };
+  const trainee = [];
+  const longueurTrainee = Math.round(14 + 18 * p);
+  // éclairs qui frappent la cible à l'impact (tracés de la cible vers le haut, affichés en claquant)
+  const frappes = Array.from({ length: 1 + Math.round(2 * p) }, () => tracerEclair(cible, gsap.utils.random(55, 85) + 70 * p));
+  let eclate = false;
+  const etincelle = (x, y, vx, vy, duree, couleur) => particules.push({ x, y, vx, vy, vie: 0, duree, couleur });
+  // onde de choc tramée, aplatie comme posée au sol
+  const onde = (avancee, rayonMax, intensite) => {
+    if (avancee <= 0 || avancee >= 1) {
+      return;
+    }
+    const rayon = 4 + rayonMax * (1 - (1 - avancee) ** 2);
+    for (let a = 0; a < Math.PI * 2; a += 1 / rayon) {
+      pinceau.pixel(cible.x + Math.cos(a) * rayon, cible.y + Math.sin(a) * rayon * 0.45, intensite * (1 - avancee));
+    }
+  };
+
+  return (t, dt) => {
+    // l'aura de l'arche (déjà chargée si l'on a maintenu le clic) retombe pendant le vol
+    const montee = dejaCharge ? 1 : Math.min(1, t / charge);
+    const retombee = t > charge ? Math.max(0, 1 - (t - charge) / 0.6) : 1;
+    pinceau.lueur(arche.x, arche.y, 10 + 18 * montee + 35 * p, (0.35 + 0.3 * p) * montee * retombee);
+    pinceau.halo(arche.x, arche.y, 3 + 5 * montee + 8 * p, (0.4 + 0.6 * montee) * retombee);
+    if (t < charge && Math.random() < dt * 30) {
+      etincelle(arche.x + gsap.utils.random(-5, 5), ruine.base, gsap.utils.random(-3, 3), gsap.utils.random(-28, -12), gsap.utils.random(0.4, 0.9));
+    }
+    const enVol = t - charge;
+    if (enVol < 0) {
+      return true;
+    }
+    if (enVol < vol) {
+      // lente au départ, accélère dans la descente (piqué)
+      const position = bezier((enVol / vol) ** 1.7);
+      trainee.unshift(position);
+      trainee.length = Math.min(trainee.length, longueurTrainee);
+      const rayon = 3.2 + 3.5 * p;
+      trainee.forEach((point, i) => pinceau.halo(point.x, point.y, rayon * (1 - i / trainee.length) + 0.6, 1 - i / trainee.length));
+      pinceau.lueur(position.x, position.y, 20 + 30 * p, 0.35 + 0.25 * p);
+      if (Math.random() < dt * (45 + 60 * p)) {
+        etincelle(position.x, position.y, gsap.utils.random(-6, 6) * (1 + p), gsap.utils.random(-6, 6) * (1 + p), gsap.utils.random(0.3, 0.7), Math.random() < 0.3 ? accent : null);
+      }
+      return true;
+    }
+    // impact : éclairs, lumière, ondes de choc tramées qui s'élargissent, gerbe d'étincelles
+    const temps = enVol - vol;
+    const q = temps / impact;
+    if (!eclate) {
+      eclate = true;
+      for (let i = 0; i < 40 + 90 * p; i++) {
+        const angle = -Math.PI * Math.random();
+        const vitesse = gsap.utils.random(20, 60) * (1 + p);
+        etincelle(cible.x, cible.y, Math.cos(angle) * vitesse, Math.sin(angle) * vitesse, gsap.utils.random(0.6, 1.3) + p * gsap.utils.random(0, 1), Math.random() < 0.35 ? accent : couleurs[gsap.utils.random(1, 3, 1)]);
+      }
+    }
+    const dureeFrappe = 0.3 + 0.15 * p;
+    if (q < dureeFrappe) {
+      frappes.forEach((frappe, i) => {
+        if (Math.sin(q * 90 + i * 2) > -0.3) {
+          const force = 1 - q / dureeFrappe;
+          frappe.points.slice(1).forEach((point, j) => pinceau.trait(frappe.points[j], point, force));
+          frappe.branches.forEach((branche) => branche.slice(1).forEach((point, j) => pinceau.trait(branche[j], point, force * 0.7)));
+        }
+      });
+    }
+    // à pleine puissance, tout le ciel s'illumine un instant
+    if (p > 0.85) {
+      pinceau.lueur(cible.x, cible.y, 380, 0.22 * (1 - q) ** 3);
+    }
+    pinceau.lueur(cible.x, cible.y, 70 + 110 * p, (0.6 + 0.3 * p) * (1 - q) ** 2);
+    pinceau.halo(cible.x, cible.y, (9 + 12 * p) * (1 - q) + 1, 1 - q);
+    onde(q, 34 + 56 * p, 0.9);
+    if (p > 0.5) {
+      onde((temps - 0.15) / (impact - 0.15), (34 + 56 * p) * 0.7, 0.7);
+    }
+    return q < 1;
+  };
+}
+
+// La charge pendant que l'on maintient le clic : l'aura enfle dans la ruine, des arcs crépitent autour,
+// un viseur tourne sur le point visé ; tout grandit avec la puissance (0 à 1).
+function dessinerCharge(pinceau, particules, puissance, t, dt, cible) {
+  const { ruine, accent } = CONTACT.magie;
+  const p = puissance;
+  const arche = { x: ruine.x, y: (ruine.haut + ruine.base) / 2 };
+  const vacille = 0.8 + 0.2 * Math.sin(t * 40) * Math.random();
+  pinceau.lueur(arche.x, arche.y, 12 + 45 * p, (0.25 + 0.45 * p) * vacille);
+  pinceau.halo(arche.x, arche.y, 3 + 11 * p, (0.5 + 0.5 * p) * vacille);
+  if (Math.random() < dt * (20 + 70 * p)) {
+    particules.push({ x: arche.x + gsap.utils.random(-6, 6) * (1 + p), y: ruine.base, vx: gsap.utils.random(-4, 4), vy: gsap.utils.random(-30, -12) * (1 + p), vie: 0, duree: gsap.utils.random(0.4, 0.9), couleur: null });
+  }
+  // arcs électriques autour de la ruine, de plus en plus fréquents
+  if (p > 0.35 && Math.random() < dt * 14 * p) {
+    const arc = tracerEclair({ x: arche.x + gsap.utils.random(-4, 4), y: ruine.haut }, gsap.utils.random(10, 18 + 30 * p));
+    arc.points.slice(1).forEach((point, j) => pinceau.trait(arc.points[j], point, 0.8));
+  }
+  // viseur : anneau en pointillés qui tourne, aplati comme l'onde d'impact ; il pulse une fois chargé
+  const plein = p >= 1;
+  const rayon = 5 + 9 * p + (plein ? Math.sin(t * 12) * 1.5 : 0);
+  for (let a = 0; a < Math.PI * 2; a += 1 / rayon) {
+    if (Math.sin(a * 6 + t * 5) > 0) {
+      pinceau.pixel(cible.x + Math.cos(a) * rayon, cible.y + Math.sin(a) * rayon * 0.45, 0.5 + 0.5 * p, plein ? accent : null);
+    }
+  }
+  pinceau.pixel(cible.x, cible.y, 1);
+}
+
+function initialiserMagie() {
+  const toile = document.querySelector(SELECTEURS.magieContact);
+  const zone = document.querySelector(SELECTEURS.zoneContact);
+  if (!toile || !zone || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    return;
+  }
+  const { premierDelai, intervalleMin, intervalleMax } = CONTACT.magie;
+  const contexte = toile.getContext("2d");
+  const pinceau = creerPinceauMagie(contexte);
+  const particules = [];
+  // sorts en cours : le sort automatique et ceux lancés au clic, joués ensemble
+  const sorts = [];
+  let automatiqueEnCours = false;
+  let attente = premierDelai;
+  let visible = false;
+  let precedent = 0;
+  const lancer = (jouer, automatique = false) => sorts.push({ jouer, temps: 0, automatique });
+  // charge en cours (clic maintenu sur le fond) : { duree, cible, pointeur }
+  let charge = null;
+  const puissanceDe = (duree) => gsap.utils.clamp(0, 1, (duree - CONTACT.magie.seuilMaintien) / CONTACT.magie.dureeChargeMax);
+
+  const image = (maintenant) => {
+    if (!visible) {
+      return;
+    }
+    const dt = Math.min(0.05, (maintenant - precedent) / 1000 || 0);
+    precedent = maintenant;
+    contexte.clearRect(0, 0, toile.width, toile.height);
+    contexte.globalCompositeOperation = "lighter";
+    if (!automatiqueEnCours) {
+      attente -= dt;
+      if (attente <= 0) {
+        automatiqueEnCours = true;
+        lancer(creerSort(pinceau, particules), true);
+      }
+    }
+    for (let i = sorts.length - 1; i >= 0; i--) {
+      const sort = sorts[i];
+      sort.temps += dt;
+      if (!sort.jouer(sort.temps, dt)) {
+        sorts.splice(i, 1);
+        if (sort.automatique) {
+          automatiqueEnCours = false;
+          attente = gsap.utils.random(intervalleMin, intervalleMax);
+        }
+      }
+    }
+    if (charge) {
+      charge.duree += dt;
+      if (charge.duree > CONTACT.magie.seuilMaintien) {
+        dessinerCharge(pinceau, particules, puissanceDe(charge.duree), charge.duree, dt, charge.cible);
+      }
+    }
+    // étincelles : montent ou s'écartent, ralenties, et s'éteignent en se tramant
+    for (let i = particules.length - 1; i >= 0; i--) {
+      const particule = particules[i];
+      particule.vie += dt;
+      if (particule.vie >= particule.duree) {
+        particules.splice(i, 1);
+        continue;
+      }
+      particule.vx *= 1 - dt * 1.5;
+      particule.vy = particule.vy * (1 - dt * 1.5) + dt * 6;
+      particule.x += particule.vx * dt;
+      particule.y += particule.vy * dt;
+      pinceau.pixel(particule.x, particule.y, 1 - particule.vie / particule.duree * 0.8, particule.couleur);
+    }
+    requestAnimationFrame(image);
+  };
+
+  // n'anime que lorsque le Contact est à l'écran
+  new IntersectionObserver(([entree]) => {
+    const etaitVisible = visible;
+    visible = entree.isIntersecting;
+    if (visible && !etaitVisible) {
+      precedent = performance.now();
+      requestAnimationFrame(image);
+    }
+  }, { threshold: 0.3 }).observe(zone);
+
+  // appui sur le fond seulement (pas sur le texte, les boutons ou le menu) : tant qu'on maintient,
+  // l'énergie s'accumule ; au relâchement, un sort part de la ruine et s'abat sur le point visé avec
+  // une puissance qui dépend du temps de maintien (un simple clic : le sort de base)
+  const contenu = zone.querySelector(SELECTEURS.contact);
+  const versScene = (evenement) => {
+    const scene = toile.getBoundingClientRect();
+    return {
+      x: (evenement.clientX - scene.left) / scene.width * toile.width,
+      y: (evenement.clientY - scene.top) / scene.height * toile.height
+    };
+  };
+  zone.addEventListener("pointerdown", (evenement) => {
+    if (evenement.button !== 0 || (evenement.target !== zone && evenement.target !== contenu)) {
+      return;
+    }
+    if (enTransition || charge || sorts.length >= CONTACT.magie.sortsMax) {
+      return;
+    }
+    evenement.preventDefault();
+    // le relâchement est reçu même si le pointeur sort de la section (capture facultative)
+    try {
+      zone.setPointerCapture(evenement.pointerId);
+    } catch {
+      // pointeur déjà relâché : le sort partira au pointerup suivant
+    }
+    charge = { duree: 0, cible: versScene(evenement), pointeur: evenement.pointerId };
+  });
+  zone.addEventListener("pointermove", (evenement) => {
+    if (charge && evenement.pointerId === charge.pointeur) {
+      charge.cible = versScene(evenement);
+    }
+  });
+  const relacher = (evenement) => {
+    if (!charge || evenement.pointerId !== charge.pointeur) {
+      return;
+    }
+    const { duree, cible } = charge;
+    charge = null;
+    if (evenement.type === "pointercancel" || enTransition) {
+      return;
+    }
+    const maintenu = duree > CONTACT.magie.seuilMaintien;
+    lancer(creerSortCible(pinceau, particules, cible, puissanceDe(duree), maintenu));
+  };
+  zone.addEventListener("pointerup", relacher);
+  zone.addEventListener("pointercancel", relacher);
+}
+
 creerEtoiles();
+creerEtoilesContact();
+initialiserMagie();
 initialiserOnglets();
 initialiserCartePortrait();
 initialiserObjets();
 initialiserQuetes();
 initialiserDossiers();
+initialiserContact();
 initialiserBougies();
 animerVie();
 ajusterContenus();

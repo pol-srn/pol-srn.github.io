@@ -9,3 +9,14 @@ Thumbs.db
 .impeccable/mocks/
 .impeccable/review/
 prototypes/
+
+# Réglages de Visual Studio (jamais commités)
+.vs/
+
+# Images provisoires des débuts, remplacées par les vrais projets
+assets/images/projets/fictif/
+
+# Notes de conception (gardées en local, non publiées)
+BRIEF.md
+PRODUCT.md
+.impeccable/

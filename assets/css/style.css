@@ -24,6 +24,14 @@
   unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
 
+@font-face {
+  font-family: "IM Fell English";
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../fonts/im-fell-english-italique-latin.woff2") format("woff2");
+}
+
 :root {
   --couleur-fond: #0a1020;
   --couleur-surface: #111a2e;
@@ -358,6 +366,59 @@ img {
   padding: var(--espace-l) var(--marge-page);
 }
 
+/* ---------- Bouton : plaque pixel art commune à tout le site ---------- */
+/* 3 états : repos, survol ou focus (reflets glacés), actif ou sélectionné (coins dorés) ;
+   seule la barre du milieu s'étire, les coins (crochets, encoches) restent au pixel près */
+.bouton {
+  --cadre-bouton: url("../images/ui/bouton-repos.png");
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espace-xs);
+  min-height: 50px;
+  padding: 0 1.875rem;
+  font-family: var(--police-texte);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.12em;
+  text-decoration: none;
+  text-transform: uppercase;
+  color: var(--couleur-terne);
+  transition: color var(--duree-courte);
+  background: none;
+  border: 0 solid transparent;
+  border-image: var(--cadre-bouton) 24 60 fill / 24px 60px stretch;
+  image-rendering: pixelated;
+  cursor: pointer;
+}
+
+/* carré, pour les icônes : seuls les coins sont gardés */
+.bouton--compact {
+  width: 52px;
+  height: 50px;
+  padding: 0;
+  border-image: var(--cadre-bouton) 24 26 fill / 24px 26px stretch;
+}
+
+.bouton:hover,
+.bouton:focus-visible {
+  --cadre-bouton: url("../images/ui/bouton-survol.png");
+  color: var(--couleur-ivoire);
+}
+
+.bouton:active,
+.bouton[aria-selected="true"],
+.bouton[aria-current] {
+  --cadre-bouton: url("../images/ui/bouton-actif.png");
+  color: #f3d79a;
+}
+
+.bouton:focus-visible {
+  outline: 2px solid var(--couleur-accent);
+  outline-offset: 3px;
+}
+
 .langue {
   display: flex;
   gap: var(--espace-xs);
@@ -370,16 +431,7 @@ img {
 }
 
 .langue__lien {
-  display: block;
-  padding: var(--espace-xs);
-  color: var(--couleur-texte-2);
-  text-decoration: none;
-  transition: color var(--duree-courte);
-}
-
-.langue__lien:hover,
-.langue__lien--actif {
-  color: var(--couleur-texte);
+  letter-spacing: 0.06em;
 }
 
 .hero {
@@ -876,19 +928,16 @@ img {
   width: 100%;
   height: 4.125rem;
   margin-bottom: 0.25rem;
-  padding: 0.375rem 0 0 1.5rem;
-  font: inherit;
+  padding: 0.375rem 0 0 1.875rem;
+  letter-spacing: normal;
   text-align: left;
-  background: none;
-  border: 0;
-  border-bottom: 1px solid rgb(255 255 255 / 0.05);
-  cursor: pointer;
-  transition: background-color 0.3s;
+  text-transform: none;
 }
 
 .classes__nom {
   font-family: var(--police-texte);
-  font-size: 1.5rem;
+  font-size: 1.25rem;
+  white-space: nowrap;
   line-height: 1.2;
   color: var(--couleur-terne);
   transition: color 0.3s;
@@ -903,21 +952,6 @@ img {
 
 .classes__choix:hover .classes__nom {
   color: var(--couleur-ivoire-2);
-}
-
-.classes__choix[aria-selected="true"] {
-  background: linear-gradient(90deg, rgb(199 169 107 / 0.22), transparent);
-}
-
-.classes__choix[aria-selected="true"]::before {
-  position: absolute;
-  top: 1.4375rem;
-  left: 0.5625rem;
-  width: 0.4375rem;
-  height: 0.4375rem;
-  background: var(--couleur-or);
-  transform: rotate(45deg);
-  content: "";
 }
 
 .classes__choix[aria-selected="true"] .classes__nom {
@@ -1293,6 +1327,17 @@ img {
   pointer-events: none;
 }
 
+/* la forêt à l'aube, vue par la grande fenêtre (vitre transparente dans la pièce) : même cadrage que
+   dans le Contact, l'image couvre l'écran, centrée ; le passage vers le Contact reste ainsi cohérent */
+.zone--projets::before {
+  position: absolute;
+  inset: 0;
+  z-index: -3;
+  background: url("../images/contact/foret.webp") 50% 50% / cover no-repeat;
+  image-rendering: pixelated;
+  content: "";
+}
+
 .zone--projets::after {
   position: absolute;
   inset: 0;
@@ -1458,21 +1503,25 @@ img {
 .projets__onglets {
   display: flex;
   align-items: center;
-  gap: 1cqw;
+  gap: var(--espace-xs);
   position: absolute;
   top: 2.4cqw;
   left: 50%;
   z-index: 4;
-  padding: 0.5cqw 0.9cqw;
-  background: rgb(20 12 6 / 0.82);
-  border: 1px solid var(--couleur-or-sombre);
-  box-shadow: 0 0.3cqw 0.8cqw rgb(0 0 0 / 0.5);
+  filter: drop-shadow(0 0.3cqw 0.5cqw rgb(0 0 0 / 0.6));
   translate: -50% 0;
 }
 
 .projets__categorie {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   min-width: 13cqw;
+  min-height: 50px;
   margin: 0;
+  padding: 0 1.875rem;
+  border-image: url("../images/ui/bouton-repos.png") 24 60 fill / 24px 60px stretch;
+  image-rendering: pixelated;
   font-family: var(--police-titre);
   font-size: 2.2cqw;
   line-height: 1.1;
@@ -1480,29 +1529,17 @@ img {
   color: var(--couleur-ivoire);
 }
 
-.projets__fleche {
-  width: 2.2cqw;
-  height: 2.2cqw;
-  padding: 0;
+/* triangle doré dessiné au-dessus du cadre */
+.projets__fleche::before {
+  width: 0.625rem;
+  height: 0.75rem;
   background: var(--couleur-or);
-  border: 0;
-  clip-path: polygon(100% 0, 0 50%, 100% 100%);
-  cursor: pointer;
-  transition: background-color var(--duree-courte), scale var(--duree-courte);
-}
-
-.projets__fleche--suivante {
   clip-path: polygon(0 0, 100% 50%, 0 100%);
+  content: "";
 }
 
-.projets__fleche:hover {
-  background: var(--couleur-ivoire);
-  scale: 1.15;
-}
-
-.projets__fleche:focus-visible {
-  outline: 2px solid var(--couleur-accent);
-  outline-offset: 0.4cqw;
+.projets__fleche--precedente::before {
+  clip-path: polygon(100% 0, 0 50%, 100% 100%);
 }
 
 .projets {
@@ -1557,6 +1594,232 @@ img {
   }
 }
 
+/* ---------- Contact : dernière étape du voyage ---------- */
+.zone--contact {
+  --ombre-contact: 0 1px 2px rgb(0 0 0 / 0.8), 0 2px 12px rgb(0 0 0 / 0.5);
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding-right: calc(var(--marge-page) + var(--reserve-chemin));
+  /* étincelle en pixel art au-dessus du fond : un clic y lance un sort */
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' shape-rendering='crispEdges'%3E%3Cpath fill='%239a78ff' d='M7 0h2v5H7zM7 11h2v5H7zM0 7h5v2H0zM11 7h5v2h-5z'/%3E%3Cpath fill='%23f6f0ff' d='M6 6h4v4H6z'/%3E%3C/svg%3E") 8 8, crosshair;
+}
+
+/* la forêt à l'aube vue du haut de la tour (même cadrage que la fin de la transition : couvre l'écran, centrée) */
+.contact__decor {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background: url("../images/contact/foret.webp") 50% 50% / cover no-repeat;
+  container-type: size;
+  image-rendering: pixelated;
+  /* les clics traversent le décor jusqu'à la section (sort lancé au clic, voir main.js) */
+  pointer-events: none;
+}
+
+/* calque calé exactement sur l'image de la forêt (2:1, couvre l'écran, centrée) : étoiles et brume
+   restent ainsi au bon endroit du ciel et des cimes quelle que soit la taille de l'écran ;
+   il apparaît avec le décor à la fin de la transition (--voile-decor) */
+.contact__scene {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: max(100cqw, 200cqh);
+  aspect-ratio: 2 / 1;
+  overflow: hidden;
+  opacity: var(--voile-decor, 1);
+  translate: -50% -50%;
+}
+
+.contact__etoiles {
+  position: absolute;
+  inset: 0;
+}
+
+/* sorts lancés depuis la ruine : dessinés au pixel d'art de la forêt (816 x 408), agrandis sans lissage */
+.contact__magie {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+}
+
+/* une étoile = un pixel d'art de la forêt (816 px de large) ; plus discrètes que sur l'Accueil : le jour se lève */
+.contact__etoile {
+  position: absolute;
+  top: var(--y);
+  left: var(--x);
+  width: calc(100% / 816);
+  aspect-ratio: 1;
+  background: var(--couleur-etoile-brillante);
+  opacity: var(--eclat, 0.5);
+}
+
+.contact__etoile--scintille {
+  animation: scintille var(--duree, 5s) ease-in-out var(--delai, 0s) infinite;
+}
+
+/* brume tramée qui dérive lentement sur la cime des arbres ; deux fois la largeur pour boucler sans couture */
+.contact__brume {
+  position: absolute;
+  left: 0;
+  width: 200%;
+  height: calc(100% * 40 / 408);
+  background: url("../images/contact/brume.png") 0 0 / 50% 100% repeat-x;
+  image-rendering: pixelated;
+  animation: brume-derive var(--duree, 120s) linear var(--delai, 0s) infinite;
+}
+
+.contact__brume--loin {
+  --duree: 160s;
+  top: 57.5%;
+  opacity: 0.5;
+}
+
+.contact__brume--pres {
+  --duree: 95s;
+  --delai: -40s;
+  top: 69%;
+  opacity: 0.4;
+}
+
+@keyframes brume-derive {
+  to {
+    translate: -50% 0;
+  }
+}
+
+/* voile noir léger à gauche, derrière le texte ; masqué pendant la transition (--voile-decor) */
+.zone--contact::after {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(90deg, rgb(0 0 0 / 0.55) 0%, rgb(0 0 0 / 0.42) 38%, rgb(0 0 0 / 0) 62%);
+  opacity: var(--voile-decor, 1);
+  pointer-events: none;
+  content: "";
+}
+
+.contact {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  max-width: 44rem;
+  min-width: 0;
+  /* même échelle que l'À propos, recopiée en JS (titres au même endroit dans toutes les sections) */
+  zoom: var(--echelle, 1);
+}
+
+/* aucun bloc ne dépasse la largeur disponible (petits écrans) ; ombre portée pour détacher le texte de l'aube */
+.contact > * {
+  max-width: 100%;
+  cursor: auto;
+  text-shadow: var(--ombre-contact);
+}
+
+.contact__surtitre {
+  margin: 0 0 var(--espace-m);
+  font-family: var(--police-texte);
+  font-size: 0.875rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #dcc08a;
+}
+
+.contact__titre {
+  margin: 0;
+  font-size: clamp(3.5rem, 2rem + 6vw, 5.5rem);
+  line-height: 0.86;
+}
+
+.contact__accent {
+  display: block;
+  color: var(--couleur-or);
+}
+
+.contact__courriel {
+  margin-top: var(--espace-xl);
+}
+
+.contact__ligne {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espace-m);
+  margin: 0;
+  padding-bottom: var(--espace-xs);
+  border-bottom: 2px solid var(--couleur-or);
+}
+
+.contact__adresse {
+  font-family: var(--police-texte);
+  font-size: clamp(1.375rem, 1rem + 1.4vw, 2.125rem);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  overflow-wrap: anywhere;
+  text-decoration: none;
+  color: var(--couleur-ivoire);
+  transition: color var(--duree-courte);
+}
+
+.contact__adresse:hover {
+  color: var(--couleur-or);
+}
+
+.contact__icone {
+  width: 1.125rem;
+  height: 1.125rem;
+  fill: currentColor;
+  shape-rendering: crispEdges;
+}
+
+.contact__adresse:focus-visible {
+  outline: 2px solid var(--couleur-accent);
+  outline-offset: 3px;
+}
+
+.contact__retour {
+  min-height: 1.4em;
+  margin: var(--espace-xs) 0 0;
+  font-size: 0.9375rem;
+  color: var(--couleur-or);
+}
+
+.contact__accroche {
+  margin: var(--espace-xs) 0 0;
+  font-family: "IM Fell English", Georgia, serif;
+  font-size: 1.125rem;
+  font-style: italic;
+  line-height: 1.5;
+  color: #e6dfcd;
+}
+
+.contact__ailleurs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espace-l);
+  margin: var(--espace-l) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* grand écran : texte calé comme celui de l'À propos, titre en très grand */
+@media (min-width: 64rem) {
+  .zone--contact {
+    justify-content: flex-start;
+    padding: 0;
+  }
+
+  .contact {
+    padding: var(--marge-apropos);
+  }
+
+  .contact__titre {
+    font-size: calc(var(--taille-titre-apropos) * 1.45);
+  }
+}
+
 /* ---------- Dossier : le projet en grand, dans une fenêtre au-dessus de la page ---------- */
 .dossier-ouvert {
   overflow: hidden;
@@ -1602,19 +1865,16 @@ img {
   position: absolute;
   top: 0.75rem;
   right: 0.75rem;
-  width: 2.5rem;
-  height: 2.5rem;
-  padding: 0;
+}
+
+/* la croix, au-dessus du cadre */
+.dossier__fermer::before {
+  width: 1rem;
+  height: 1rem;
   background:
     linear-gradient(45deg, transparent calc(50% - 1px), var(--couleur-ivoire-2) calc(50% - 1px) calc(50% + 1px), transparent calc(50% + 1px)) center / 1rem 1rem no-repeat,
     linear-gradient(-45deg, transparent calc(50% - 1px), var(--couleur-ivoire-2) calc(50% - 1px) calc(50% + 1px), transparent calc(50% + 1px)) center / 1rem 1rem no-repeat;
-  border: 1px solid var(--couleur-or-sombre);
-  cursor: pointer;
-  transition: border-color var(--duree-courte);
-}
-
-.dossier__fermer:hover {
-  border-color: var(--couleur-or);
+  content: "";
 }
 
 .dossier__texte {
@@ -1701,11 +1961,7 @@ img {
 }
 
 .dossier__lien {
-  display: inline-block;
   margin-bottom: var(--espace-s);
-  font-family: var(--police-texte);
-  font-size: 1.0625rem;
-  color: var(--couleur-accent);
 }
 
 .dossier__note {
@@ -1737,7 +1993,8 @@ img {
 /* cadre 16:9 fixe : chaque visuel (capture large, écran de téléphone, dessin carré) y est montré en
    entier sur fond sombre, sans recadrage ; les vraies images sont lissées (ce ne sont pas du pixel art) */
 .dossier__image,
-.dossier__video {
+.dossier__video,
+.dossier__youtube {
   display: block;
   width: 100%;
   height: auto;
@@ -1746,8 +2003,13 @@ img {
   background: #070b16;
 }
 
+.dossier__youtube {
+  border: 0;
+}
+
 .dossier__image[hidden],
-.dossier__video[hidden] {
+.dossier__video[hidden],
+.dossier__youtube[hidden] {
   display: none;
 }
 
@@ -1830,18 +2092,6 @@ img {
   opacity: 1;
 }
 
-.dossier__fleche {
-  display: grid;
-  place-items: center;
-  width: 2.5rem;
-  height: 2.5rem;
-  padding: 0;
-  background: none;
-  border: 1px solid var(--couleur-or-sombre);
-  cursor: pointer;
-  transition: border-color var(--duree-courte);
-}
-
 .dossier__fleche::before {
   width: 0.625rem;
   height: 0.75rem;
@@ -1854,11 +2104,7 @@ img {
   clip-path: polygon(100% 0, 0 50%, 100% 100%);
 }
 
-.dossier__fleche:hover {
-  border-color: var(--couleur-or);
-}
-
-:is(.dossier__fermer, .dossier__fleche, .dossier__miniature):focus-visible {
+.dossier__miniature:focus-visible {
   outline: 2px solid var(--couleur-accent);
   outline-offset: 3px;
 }
@@ -1878,6 +2124,8 @@ img {
 @media (prefers-reduced-motion: reduce) {
   .chargement__point,
   .hero__etoile--scintille,
+  .contact__etoile--scintille,
+  .contact__brume,
   .hero__etoile--eclat::before,
   .hero__etoile--eclat::after,
   .chemin__feu {
@@ -1958,62 +2206,11 @@ img {
   }
 
   .zone--apropos,
-  .zone--projets {
+  .zone--projets,
+  .zone--contact {
     padding-right: var(--marge-page);
-  }
-
-  /* petit écran : la carte serait illisible ; les affiches s'affichent dépliées, en grille, sous le titre */
-  .projets__carte {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: var(--espace-m);
-    position: relative;
-    top: auto;
-    left: auto;
-    order: 2;
-    width: auto;
-    height: auto;
-    margin-top: var(--espace-l);
-  }
-
-  .affiche {
-    position: relative;
-    top: auto;
-    left: auto;
-    width: auto;
-    pointer-events: auto;
-  }
-
-  .affiche__deroule {
-    clip-path: none;
-  }
-
-  .affiche__rouleau {
-    display: none;
-  }
-
-  .affiche__nom {
-    margin-top: 0.375rem;
-    font-size: 1rem;
-  }
-
-  .projets__onglets {
-    grid-column: 1 / -1;
-    justify-self: center;
-    gap: 1rem;
-    position: static;
-    padding: 0.375rem 0.75rem;
-    translate: none;
-  }
-
-  .projets__categorie {
-    min-width: 9rem;
-    font-size: 1.375rem;
-  }
-
-  .projets__fleche {
-    width: 1.25rem;
-    height: 1.25rem;
+    /* le contenu ne passe jamais sous la barre de navigation fixée en bas */
+    padding-bottom: calc(var(--hauteur-barre-mobile) + var(--espace-m));
   }
 
   .dossier {
@@ -2069,5 +2266,57 @@ img {
 
   .pied {
     padding-bottom: calc(var(--hauteur-barre-mobile) + var(--espace-l));
+  }
+}
+
+/* petit écran, ou tablette tenue en hauteur : la carte serait illisible ou rognée ; les affiches s'affichent
+   dépliées, en grille, sous le titre */
+@media (max-width: 47.99rem), (max-width: 63.99rem) and (orientation: portrait) {
+  .projets__carte {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--espace-m);
+    position: relative;
+    top: auto;
+    left: auto;
+    order: 2;
+    width: auto;
+    height: auto;
+    margin-top: var(--espace-l);
+  }
+
+  .affiche {
+    position: relative;
+    top: auto;
+    left: auto;
+    width: auto;
+    pointer-events: auto;
+  }
+
+  .affiche__deroule {
+    clip-path: none;
+  }
+
+  .affiche__rouleau {
+    display: none;
+  }
+
+  .affiche__nom {
+    margin-top: 0.375rem;
+    font-size: 1rem;
+  }
+
+  .projets__onglets {
+    grid-column: 1 / -1;
+    justify-self: center;
+    gap: 1rem;
+    position: static;
+    padding: 0.375rem 0.75rem;
+    translate: none;
+  }
+
+  .projets__categorie {
+    min-width: 9rem;
+    font-size: 1.375rem;
   }
 }

@@ -12,6 +12,8 @@
   <link rel="preload" href="../assets/fonts/pirata-one-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="../assets/fonts/schibsted-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="../assets/css/style.css">
+  <link rel="preload" href="../assets/images/ui/bouton-survol.png" as="image">
+  <link rel="preload" href="../assets/images/ui/bouton-actif.png" as="image">
   <script>document.documentElement.className = "js chargement-actif";</script>
 </head>
 <body>
@@ -41,8 +43,8 @@
 
   <header class="entete">
     <ul class="langue">
-      <li><a class="langue__lien" href="../" lang="fr" hreflang="fr">FR</a></li>
-      <li><a class="langue__lien langue__lien--actif" href="./" lang="en" aria-current="page">EN</a></li>
+      <li><a class="bouton bouton--compact langue__lien" href="../" lang="fr" hreflang="fr">FR</a></li>
+      <li><a class="bouton bouton--compact langue__lien langue__lien--actif" href="./" lang="en" aria-current="page">EN</a></li>
     </ul>
   </header>
 
@@ -102,10 +104,10 @@
         <div class="apropos__classes">
           <p class="apropos__intitule" id="class-heading">Specialty</p>
           <div class="classes" role="tablist" aria-labelledby="class-heading" aria-orientation="vertical">
-            <button class="classes__choix" type="button" role="tab" id="tab-overview" aria-controls="panel-overview" aria-selected="true" data-portrait="../assets/images/a-propos/portrait-etudiant.png" data-alt="Pixel art portrait of Paul Siron in a burgundy hoodie"><span class="classes__nom">Overview</span><span class="classes__type">Class: Student</span></button>
-            <button class="classes__choix" type="button" role="tab" id="tab-interface" aria-controls="panel-interface" aria-selected="false" tabindex="-1" data-portrait="../assets/images/a-propos/portrait-chevalier.png" data-alt="Pixel art portrait of Paul Siron as a knight, burgundy cape and armour"><span class="classes__nom">Interface</span><span class="classes__type">Class: Knight</span></button>
-            <button class="classes__choix" type="button" role="tab" id="tab-graphic" aria-controls="panel-graphic" aria-selected="false" tabindex="-1" data-portrait="../assets/images/a-propos/portrait-samourai.png" data-alt="Pixel art portrait of Paul Siron as a samurai, black lacquered armour laced in red"><span class="classes__nom">Graphic design</span><span class="classes__type">Class: Samurai</span></button>
-            <button class="classes__choix" type="button" role="tab" id="tab-video" aria-controls="panel-video" aria-selected="false" tabindex="-1" data-portrait="../assets/images/a-propos/portrait-sorcier.png" data-alt="Pixel art portrait of Paul Siron as a sorcerer, purple cloak and magic staff"><span class="classes__nom">Video</span><span class="classes__type">Class: Sorcerer</span></button>
+            <button class="bouton classes__choix" type="button" role="tab" id="tab-overview" aria-controls="panel-overview" aria-selected="true" data-portrait="../assets/images/a-propos/portrait-etudiant.png" data-alt="Pixel art portrait of Paul Siron in a burgundy hoodie"><span class="classes__nom">Overview</span><span class="classes__type">Class: Student</span></button>
+            <button class="bouton classes__choix" type="button" role="tab" id="tab-interface" aria-controls="panel-interface" aria-selected="false" tabindex="-1" data-portrait="../assets/images/a-propos/portrait-chevalier.png" data-alt="Pixel art portrait of Paul Siron as a knight, burgundy cape and armour"><span class="classes__nom">Interface</span><span class="classes__type">Class: Knight</span></button>
+            <button class="bouton classes__choix" type="button" role="tab" id="tab-graphic" aria-controls="panel-graphic" aria-selected="false" tabindex="-1" data-portrait="../assets/images/a-propos/portrait-samourai.png" data-alt="Pixel art portrait of Paul Siron as a samurai, black lacquered armour laced in red"><span class="classes__nom">Graphic design</span><span class="classes__type">Class: Samurai</span></button>
+            <button class="bouton classes__choix" type="button" role="tab" id="tab-video" aria-controls="panel-video" aria-selected="false" tabindex="-1" data-portrait="../assets/images/a-propos/portrait-sorcier.png" data-alt="Pixel art portrait of Paul Siron as a sorcerer, purple cloak and magic staff"><span class="classes__nom">Video</span><span class="classes__type">Class: Sorcerer</span></button>
           </div>
           <p class="apropos__astuce">Use the arrow keys to browse the classes</p>
         </div>
@@ -211,14 +213,14 @@
 
     <section class="zone zone--projets" id="projects" aria-labelledby="title-projects">
       <div class="projets__decor" aria-hidden="true"></div>
-      <canvas class="projets__bougies" width="464" height="234" aria-hidden="true"></canvas>
+      <canvas class="projets__bougies" width="544" height="234" aria-hidden="true"></canvas>
       <!-- les affiches clouées sur la carte : roulées au repos, déroulées au survol, un clic ouvre le projet ;
            --ax / --ay = place de l'affiche (sur les terres) -->
       <div class="projets__carte" role="group" aria-labelledby="title-projects">
-        <div class="projets__onglets" role="group" aria-label="Project category" data-iut="University projects" data-perso="Personal projects"><button class="projets__fleche projets__fleche--precedente" type="button" aria-label="Previous category"></button><p class="projets__categorie" aria-live="polite">University projects</p><button class="projets__fleche projets__fleche--suivante" type="button" aria-label="Next category"></button></div>
+        <div class="projets__onglets" role="group" aria-label="Project category" data-iut="University projects" data-perso="Personal projects"><button class="bouton bouton--compact projets__fleche projets__fleche--precedente" type="button" aria-label="Previous category"></button><p class="projets__categorie" aria-live="polite">University projects</p><button class="bouton bouton--compact projets__fleche projets__fleche--suivante" type="button" aria-label="Next category"></button></div>
         <button class="affiche" type="button" aria-haspopup="dialog" data-dossier="dossier-hollow" data-groupe="iut" style="--ax: 23.1%; --ay: 29.2%; --r: -2deg;"><span class="affiche__deroule"><span class="affiche__papier"><img class="affiche__vignette" src="../assets/images/projets/hollow/vignette.webp" alt="" width="960" height="540"><span class="affiche__nom">Hollow Knight app</span></span></span><span class="affiche__rouleau"></span></button>
-        <button class="affiche" type="button" aria-haspopup="dialog" data-dossier="dossier-decathlon" data-groupe="iut" style="--ax: 14.1%; --ay: 65.8%; --r: -4deg;"><span class="affiche__deroule"><span class="affiche__papier"><img class="affiche__vignette" src="../assets/images/projets/decathlon/vignette.webp" alt="" width="960" height="540"><span class="affiche__nom">Decathlon stop motion</span></span></span><span class="affiche__rouleau"></span></button>
-        <button class="affiche" type="button" aria-haspopup="dialog" data-dossier="dossier-reportage" data-groupe="iut" style="--ax: 51.9%; --ay: 18.4%; --r: 3deg;"><span class="affiche__deroule"><span class="affiche__papier"><img class="affiche__vignette" src="../assets/images/projets/reportage/vignette.webp" alt="" width="960" height="540"><span class="affiche__nom">Report and ad</span></span></span><span class="affiche__rouleau"></span></button>
+        <button class="affiche" type="button" aria-haspopup="dialog" data-dossier="dossier-decathlon" data-groupe="iut" style="--ax: 14.1%; --ay: 65.8%; --r: -4deg;"><span class="affiche__deroule"><span class="affiche__papier"><img class="affiche__vignette" src="https://i.ytimg.com/vi/p2ENpV7GJOY/mqdefault.jpg" alt="" width="960" height="540"><span class="affiche__nom">Decathlon stop motion</span></span></span><span class="affiche__rouleau"></span></button>
+        <button class="affiche" type="button" aria-haspopup="dialog" data-dossier="dossier-reportage" data-groupe="iut" style="--ax: 51.9%; --ay: 18.4%; --r: 3deg;"><span class="affiche__deroule"><span class="affiche__papier"><img class="affiche__vignette" src="https://i.ytimg.com/vi/XSuQX0kv3WE/mqdefault.jpg" alt="" width="960" height="540"><span class="affiche__nom">Report and ad</span></span></span><span class="affiche__rouleau"></span></button>
         <button class="affiche" type="button" aria-haspopup="dialog" data-dossier="dossier-stickers" data-groupe="iut" style="--ax: 65.6%; --ay: 67.9%; --r: 5deg;"><span class="affiche__deroule"><span class="affiche__papier"><img class="affiche__vignette" src="../assets/images/projets/stickers/vignette.webp" alt="" width="960" height="540"><span class="affiche__nom">Hard &amp; soft skills stickers</span></span></span><span class="affiche__rouleau"></span></button>
         <button class="affiche" type="button" aria-haspopup="dialog" data-dossier="dossier-ecommerce" data-groupe="iut" style="--ax: 75%; --ay: 11.8%; --r: -3deg;"><span class="affiche__deroule"><span class="affiche__papier"><img class="affiche__vignette" src="../assets/images/projets/ecommerce/vignette.webp" alt="" width="960" height="540"><span class="affiche__nom">Gaming e-shop</span></span></span><span class="affiche__rouleau"></span></button>
         <button class="affiche" type="button" aria-haspopup="dialog" data-dossier="dossier-youtube" data-groupe="perso" hidden style="--ax: 23.1%; --ay: 29.2%; --r: -2deg;"><span class="affiche__deroule"><span class="affiche__papier"><img class="affiche__vignette" src="../assets/images/projets/youtube/vignette.webp" alt="" width="960" height="540"><span class="affiche__nom">YouTube channel</span></span></span><span class="affiche__rouleau"></span></button>
@@ -228,13 +230,36 @@
       </div>
       <div class="projets">
         <h2 class="zone__titre projets__titre" id="title-projects">Projects</h2>
-        <p class="projets__consigne">Hover the scrolls nailed to the map, click to open a quest.</p>
+        <p class="projets__consigne">Pick a scroll nailed to the map to open a quest.</p>
       </div>
     </section>
 
-    <section class="zone" id="contact" aria-labelledby="title-contact">
-      <h2 class="zone__titre" id="title-contact">Contact</h2>
-      <p class="zone__texte">This section is under construction.</p>
+    <section class="zone zone--contact" id="contact" aria-labelledby="title-contact">
+      <div class="contact__decor" aria-hidden="true">
+        <div class="contact__scene">
+          <div class="contact__etoiles"></div>
+          <canvas class="contact__magie" width="816" height="408"></canvas>
+          <div class="contact__brume contact__brume--loin"></div>
+          <div class="contact__brume contact__brume--pres"></div>
+        </div>
+      </div>
+      <div class="contact">
+        <p class="contact__surtitre">Contact · internship from April 2027</p>
+        <h2 class="zone__titre contact__titre" id="title-contact">Let’s work <span class="contact__accent">together.</span></h2>
+        <div class="contact__courriel">
+          <p class="contact__ligne">
+            <a class="contact__adresse" href="mailto:sironpaul06@gmail.com">sironpaul06@gmail.com</a>
+            <button class="bouton bouton--compact contact__copier" type="button" aria-label="Copy the email address" data-copier="sironpaul06@gmail.com" data-copie="Address copied" data-erreur="Copy failed: select the address"><svg class="contact__icone" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M5 1h10v10H5zM6 2v8h8V2zM1 5h3v1H2v8h8v-2h1v3H1z"/></svg></button>
+          </p>
+          <p class="contact__retour" role="status" aria-live="polite"></p>
+        </div>
+        <p class="contact__accroche">Graphic design, video, interface design · Limoges, France · I reply quickly</p>
+        <ul class="contact__ailleurs">
+          <li><a class="bouton contact__lien" href="https://www.linkedin.com/in/paul-siron-0503463b3/" target="_blank" rel="noopener">LinkedIn<span class="visuellement-cache"> (new tab)</span></a></li>
+          <li><a class="bouton contact__lien" href="https://youtube.com/@pol_scootering5064" target="_blank" rel="noopener">YouTube<span class="visuellement-cache"> (new tab)</span></a></li>
+          <li><a class="bouton contact__lien" href="../assets/documents/cv-paul-siron.pdf" download="CV-Paul-Siron.pdf" hreflang="fr">Download my CV<span class="visuellement-cache"> (PDF in French, 790 KB)</span></a></li>
+        </ul>
+      </div>
     </section>
   </main>
 
@@ -244,7 +269,7 @@
 
   <dialog class="dossier" id="dossier-hollow" aria-labelledby="dossier-hollow-titre">
     <div class="dossier__cadre">
-      <button class="dossier__fermer" type="button" aria-label="Close the project"></button>
+      <button class="bouton bouton--compact dossier__fermer" type="button" aria-label="Close the project"></button>
       <div class="dossier__texte">
         <p class="dossier__type">Mobile UI · Figma</p>
         <h2 class="dossier__titre" id="dossier-hollow-titre">Hollow Knight app</h2>
@@ -255,7 +280,7 @@
           <div class="dossier__ligne"><dt>Role</dt><dd>Solo project</dd></div>
           <div class="dossier__ligne"><dt>Tool</dt><dd>Figma</dd></div>
         </dl>
-        <p class="dossier__liens"><a class="dossier__lien" href="https://www.figma.com/proto/tQHJ85Qfd7BLv5JaHsO8q5/SIRON-Paul---Hollow-Knight?node-id=2181-1936&amp;p=f&amp;viewport=249%2C402%2C0.34&amp;t=zzULNk2KFaRYJxWS-1&amp;scaling=scale-down&amp;content-scaling=fixed&amp;starting-point-node-id=2181%3A1936&amp;page-id=2181%3A1935" target="_blank" rel="noopener">View the prototype<span class="visuellement-cache"> (new tab)</span></a></p>
+        <p class="dossier__liens"><a class="bouton dossier__lien" href="https://www.figma.com/proto/tQHJ85Qfd7BLv5JaHsO8q5/SIRON-Paul---Hollow-Knight?node-id=2181-1936&amp;p=f&amp;viewport=249%2C402%2C0.34&amp;t=zzULNk2KFaRYJxWS-1&amp;scaling=scale-down&amp;content-scaling=fixed&amp;starting-point-node-id=2181%3A1936&amp;page-id=2181%3A1935" target="_blank" rel="noopener">View the prototype<span class="visuellement-cache"> (new tab)</span></a></p>
       </div>
 <section class="dossier__galerie" aria-label="Project images">
         <figure class="dossier__vue">
@@ -263,13 +288,13 @@
           <figcaption class="dossier__legende"></figcaption>
         </figure>
         <div class="dossier__navigation">
-          <button class="dossier__fleche dossier__fleche--precedente" type="button" aria-label="Previous image"></button>
+          <button class="bouton bouton--compact dossier__fleche dossier__fleche--precedente" type="button" aria-label="Previous image"></button>
           <ul class="dossier__miniatures">
             <li><button class="dossier__miniature" type="button" aria-pressed="true" aria-label="Image 1 of 3" data-image="../assets/images/projets/hollow/1.webp"><img src="../assets/images/projets/hollow/1-mini.webp" alt="" width="96" height="54" loading="lazy"></button></li>
             <li><button class="dossier__miniature" type="button" aria-pressed="false" aria-label="Image 2 of 3" data-image="../assets/images/projets/hollow/2.webp"><img src="../assets/images/projets/hollow/2-mini.webp" alt="" width="96" height="54" loading="lazy"></button></li>
             <li><button class="dossier__miniature" type="button" aria-pressed="false" aria-label="Image 3 of 3" data-image="../assets/images/projets/hollow/3.webp"><img src="../assets/images/projets/hollow/3-mini.webp" alt="" width="96" height="54" loading="lazy"></button></li>
           </ul>
-          <button class="dossier__fleche dossier__fleche--suivante" type="button" aria-label="Next image"></button>
+          <button class="bouton bouton--compact dossier__fleche dossier__fleche--suivante" type="button" aria-label="Next image"></button>
         </div>
       </section>
     </div>
@@ -277,7 +302,7 @@
 
   <dialog class="dossier" id="dossier-decathlon" aria-labelledby="dossier-decathlon-titre">
     <div class="dossier__cadre">
-      <button class="dossier__fermer" type="button" aria-label="Close the project"></button>
+      <button class="bouton bouton--compact dossier__fermer" type="button" aria-label="Close the project"></button>
       <div class="dossier__texte">
         <p class="dossier__type">Video · stop motion</p>
         <h2 class="dossier__titre" id="dossier-decathlon-titre">Decathlon stop motion</h2>
@@ -292,15 +317,17 @@
 <section class="dossier__galerie" aria-label="Project images">
         <figure class="dossier__vue">
           <img class="dossier__image" src="../assets/images/projets/decathlon/1.webp" alt="Decathlon stop motion, image 1 of 2" width="1600" height="900">
+          <iframe class="dossier__youtube" title="Video player · Decathlon stop motion" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture; fullscreen" allowfullscreen hidden></iframe>
           <figcaption class="dossier__legende"></figcaption>
         </figure>
         <div class="dossier__navigation">
-          <button class="dossier__fleche dossier__fleche--precedente" type="button" aria-label="Previous image"></button>
+          <button class="bouton bouton--compact dossier__fleche dossier__fleche--precedente" type="button" aria-label="Previous image"></button>
           <ul class="dossier__miniatures">
-            <li><button class="dossier__miniature" type="button" aria-pressed="true" aria-label="Image 1 of 2" data-image="../assets/images/projets/decathlon/1.webp"><img src="../assets/images/projets/decathlon/1-mini.webp" alt="" width="96" height="54" loading="lazy"></button></li>
-            <li><button class="dossier__miniature" type="button" aria-pressed="false" aria-label="Image 2 of 2" data-image="../assets/images/projets/decathlon/2.webp"><img src="../assets/images/projets/decathlon/2-mini.webp" alt="" width="96" height="54" loading="lazy"></button></li>
+            <li><button class="dossier__miniature dossier__miniature--video" type="button" aria-pressed="true" aria-label="Video 1 of 3" data-youtube="p2ENpV7GJOY"><img src="https://i.ytimg.com/vi/p2ENpV7GJOY/mqdefault.jpg" alt="" width="96" height="54" loading="lazy"></button></li>
+            <li><button class="dossier__miniature" type="button" aria-pressed="false" aria-label="Image 2 of 3" data-image="../assets/images/projets/decathlon/1.webp"><img src="../assets/images/projets/decathlon/1-mini.webp" alt="" width="96" height="54" loading="lazy"></button></li>
+            <li><button class="dossier__miniature" type="button" aria-pressed="false" aria-label="Image 3 of 3" data-image="../assets/images/projets/decathlon/2.webp"><img src="../assets/images/projets/decathlon/2-mini.webp" alt="" width="96" height="54" loading="lazy"></button></li>
           </ul>
-          <button class="dossier__fleche dossier__fleche--suivante" type="button" aria-label="Next image"></button>
+          <button class="bouton bouton--compact dossier__fleche dossier__fleche--suivante" type="button" aria-label="Next image"></button>
         </div>
       </section>
     </div>
@@ -308,7 +335,7 @@
 
   <dialog class="dossier" id="dossier-reportage" aria-labelledby="dossier-reportage-titre">
     <div class="dossier__cadre">
-      <button class="dossier__fermer" type="button" aria-label="Close the project"></button>
+      <button class="bouton bouton--compact dossier__fermer" type="button" aria-label="Close the project"></button>
       <div class="dossier__texte">
         <p class="dossier__type">Video · report and advert</p>
         <h2 class="dossier__titre" id="dossier-reportage-titre">Report and ad</h2>
@@ -318,22 +345,23 @@
           <div class="dossier__ligne"><dt>My role</dt><dd>Script, filming, editing</dd></div>
           <div class="dossier__ligne"><dt>Tool</dt><dd>DaVinci Resolve</dd></div>
         </dl>
-        <p class="dossier__liens"><a class="dossier__lien" href="https://youtu.be/XSuQX0kv3WE" target="_blank" rel="noopener">Watch the video<span class="visuellement-cache"> (new tab)</span></a></p>
       </div>
 <section class="dossier__galerie" aria-label="Project images">
         <figure class="dossier__vue">
           <img class="dossier__image" src="../assets/images/projets/reportage/1.webp" alt="Report and ad, image 1 of 4" width="1600" height="900">
+          <iframe class="dossier__youtube" title="Video player · Report and ad" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture; fullscreen" allowfullscreen hidden></iframe>
           <figcaption class="dossier__legende"></figcaption>
         </figure>
         <div class="dossier__navigation">
-          <button class="dossier__fleche dossier__fleche--precedente" type="button" aria-label="Previous image"></button>
+          <button class="bouton bouton--compact dossier__fleche dossier__fleche--precedente" type="button" aria-label="Previous image"></button>
           <ul class="dossier__miniatures">
-            <li><button class="dossier__miniature" type="button" aria-pressed="true" aria-label="Image 1 of 4" data-image="../assets/images/projets/reportage/1.webp"><img src="../assets/images/projets/reportage/1-mini.webp" alt="" width="96" height="54" loading="lazy"></button></li>
-            <li><button class="dossier__miniature" type="button" aria-pressed="false" aria-label="Image 2 of 4" data-image="../assets/images/projets/reportage/2.webp"><img src="../assets/images/projets/reportage/2-mini.webp" alt="" width="96" height="54" loading="lazy"></button></li>
-            <li><button class="dossier__miniature" type="button" aria-pressed="false" aria-label="Image 3 of 4" data-image="../assets/images/projets/reportage/3.webp"><img src="../assets/images/projets/reportage/3-mini.webp" alt="" width="96" height="54" loading="lazy"></button></li>
-            <li><button class="dossier__miniature" type="button" aria-pressed="false" aria-label="Image 4 of 4" data-image="../assets/images/projets/reportage/4.webp"><img src="../assets/images/projets/reportage/4-mini.webp" alt="" width="96" height="54" loading="lazy"></button></li>
+            <li><button class="dossier__miniature dossier__miniature--video" type="button" aria-pressed="true" aria-label="Video 1 of 5" data-youtube="XSuQX0kv3WE"><img src="https://i.ytimg.com/vi/XSuQX0kv3WE/mqdefault.jpg" alt="" width="96" height="54" loading="lazy"></button></li>
+            <li><button class="dossier__miniature" type="button" aria-pressed="false" aria-label="Image 2 of 5" data-image="../assets/images/projets/reportage/1.webp"><img src="../assets/images/projets/reportage/1-mini.webp" alt="" width="96" height="54" loading="lazy"></button></li>
+            <li><button class="dossier__miniature" type="button" aria-pressed="false" aria-label="Image 3 of 5" data-image="../assets/images/projets/reportage/2.webp"><img src="../assets/images/projets/reportage/2-mini.webp" alt="" width="96" height="54" loading="lazy"></button></li>
+            <li><button class="dossier__miniature" type="button" aria-pressed="false" aria-label="Image 4 of 5" data-image="../assets/images/projets/reportage/3.webp"><img src="../assets/images/projets/reportage/3-mini.webp" alt="" width="96" height="54" loading="lazy"></button></li>
+            <li><button class="dossier__miniature" type="button" aria-pressed="false" aria-label="Image 5 of 5" data-image="../assets/images/projets/reportage/4.webp"><img src="../assets/images/projets/reportage/4-mini.webp" alt="" width="96" height="54" loading="lazy"></button></li>
           </ul>
-          <button class="dossier__fleche dossier__fleche--suivante" type="button" aria-label="Next image"></button>
+          <button class="bouton bouton--compact dossier__fleche dossier__fleche--suivante" type="button" aria-label="Next image"></button>
         </div>
       </section>
     </div>
@@ -341,7 +369,7 @@
 
   <dialog class="dossier" id="dossier-stickers" aria-labelledby="dossier-stickers-titre">
     <div class="dossier__cadre">
-      <button class="dossier__fermer" type="button" aria-label="Close the project"></button>
+      <button class="bouton bouton--compact dossier__fermer" type="button" aria-label="Close the project"></button>
       <div class="dossier__texte">
         <p class="dossier__type">Illustration · Illustrator, Photoshop</p>
         <h2 class="dossier__titre" id="dossier-stickers-titre">Hard &amp; soft skills stickers</h2>
@@ -359,12 +387,12 @@
           <figcaption class="dossier__legende"></figcaption>
         </figure>
         <div class="dossier__navigation">
-          <button class="dossier__fleche dossier__fleche--precedente" type="button" aria-label="Previous image"></button>
+          <button class="bouton bouton--compact dossier__fleche dossier__fleche--precedente" type="button" aria-label="Previous image"></button>
           <ul class="dossier__miniatures">
             <li><button class="dossier__miniature" type="button" aria-pressed="true" aria-label="Image 1 of 2" data-image="../assets/images/projets/stickers/1.webp"><img src="../assets/images/projets/stickers/1-mini.webp" alt="" width="96" height="54" loading="lazy"></button></li>
             <li><button class="dossier__miniature" type="button" aria-pressed="false" aria-label="Image 2 of 2" data-image="../assets/images/projets/stickers/2.webp"><img src="../assets/images/projets/stickers/2-mini.webp" alt="" width="96" height="54" loading="lazy"></button></li>
           </ul>
-          <button class="dossier__fleche dossier__fleche--suivante" type="button" aria-label="Next image"></button>
+          <button class="bouton bouton--compact dossier__fleche dossier__fleche--suivante" type="button" aria-label="Next image"></button>
         </div>
       </section>
     </div>
@@ -372,7 +400,7 @@
 
   <dialog class="dossier" id="dossier-ecommerce" aria-labelledby="dossier-ecommerce-titre">
     <div class="dossier__cadre">
-      <button class="dossier__fermer" type="button" aria-label="Close the project"></button>
+      <button class="bouton bouton--compact dossier__fermer" type="button" aria-label="Close the project"></button>
       <div class="dossier__texte">
         <p class="dossier__type">Front-end · HTML, CSS</p>
         <h2 class="dossier__titre" id="dossier-ecommerce-titre">Gaming e-shop</h2>
@@ -383,7 +411,7 @@
           <div class="dossier__ligne"><dt>Role</dt><dd>Solo project</dd></div>
           <div class="dossier__ligne"><dt>Tools</dt><dd>HTML, CSS, VS Code</dd></div>
         </dl>
-        <p class="dossier__liens"><a class="dossier__lien" href="https://siron-sae105.mmi-limoges.fr/monsite.html" target="_blank" rel="noopener">Visit the site<span class="visuellement-cache"> (new tab)</span></a></p>
+        <p class="dossier__liens"><a class="bouton dossier__lien" href="https://siron-sae105.mmi-limoges.fr/monsite.html" target="_blank" rel="noopener">Visit the site<span class="visuellement-cache"> (new tab)</span></a></p>
       </div>
 <section class="dossier__galerie" aria-label="Project images">
         <figure class="dossier__vue">
@@ -391,21 +419,21 @@
           <figcaption class="dossier__legende"></figcaption>
         </figure>
         <div class="dossier__navigation">
-          <button class="dossier__fleche dossier__fleche--precedente" type="button" aria-label="Previous image"></button>
+          <button class="bouton bouton--compact dossier__fleche dossier__fleche--precedente" type="button" aria-label="Previous image"></button>
           <ul class="dossier__miniatures">
             <li><button class="dossier__miniature" type="button" aria-pressed="true" aria-label="Image 1 of 4" data-image="../assets/images/projets/ecommerce/1.webp"><img src="../assets/images/projets/ecommerce/1-mini.webp" alt="" width="96" height="54" loading="lazy"></button></li>
             <li><button class="dossier__miniature" type="button" aria-pressed="false" aria-label="Image 2 of 4" data-image="../assets/images/projets/ecommerce/2.webp"><img src="../assets/images/projets/ecommerce/2-mini.webp" alt="" width="96" height="54" loading="lazy"></button></li>
             <li><button class="dossier__miniature" type="button" aria-pressed="false" aria-label="Image 3 of 4" data-image="../assets/images/projets/ecommerce/3.webp"><img src="../assets/images/projets/ecommerce/3-mini.webp" alt="" width="96" height="54" loading="lazy"></button></li>
             <li><button class="dossier__miniature" type="button" aria-pressed="false" aria-label="Image 4 of 4" data-image="../assets/images/projets/ecommerce/4.webp"><img src="../assets/images/projets/ecommerce/4-mini.webp" alt="" width="96" height="54" loading="lazy"></button></li>
           </ul>
-          <button class="dossier__fleche dossier__fleche--suivante" type="button" aria-label="Next image"></button>
+          <button class="bouton bouton--compact dossier__fleche dossier__fleche--suivante" type="button" aria-label="Next image"></button>
         </div>
       </section>
     </div>
   </dialog>
   <dialog class="dossier" id="dossier-youtube" aria-labelledby="dossier-youtube-titre">
     <div class="dossier__cadre">
-      <button class="dossier__fermer" type="button" aria-label="Close the project"></button>
+      <button class="bouton bouton--compact dossier__fermer" type="button" aria-label="Close the project"></button>
       <div class="dossier__texte">
         <p class="dossier__type">Video · shooting, editing</p>
         <h2 class="dossier__titre" id="dossier-youtube-titre">YouTube channel</h2>
@@ -415,7 +443,7 @@
           <div class="dossier__ligne"><dt>Videos</dt><dd>15</dd></div>
           <div class="dossier__ligne"><dt>Tool</dt><dd>CapCut, on phone and computer</dd></div>
         </dl>
-        <p class="dossier__liens"><a class="dossier__lien" href="https://youtube.com/@pol_scootering5064" target="_blank" rel="noopener">Visit the channel<span class="visuellement-cache"> (new tab)</span></a></p>
+        <p class="dossier__liens"><a class="bouton dossier__lien" href="https://youtube.com/@pol_scootering5064" target="_blank" rel="noopener">Visit the channel<span class="visuellement-cache"> (new tab)</span></a></p>
       </div>
 <section class="dossier__galerie" aria-label="Project images">
         <figure class="dossier__vue">
@@ -423,18 +451,18 @@
           <figcaption class="dossier__legende"></figcaption>
         </figure>
         <div class="dossier__navigation">
-          <button class="dossier__fleche dossier__fleche--precedente" type="button" aria-label="Previous image"></button>
+          <button class="bouton bouton--compact dossier__fleche dossier__fleche--precedente" type="button" aria-label="Previous image"></button>
           <ul class="dossier__miniatures">
             <li><button class="dossier__miniature" type="button" aria-pressed="true" aria-label="Image 1 of 1" data-image="../assets/images/projets/youtube/1.webp"><img src="../assets/images/projets/youtube/1-mini.webp" alt="" width="96" height="54" loading="lazy"></button></li>
           </ul>
-          <button class="dossier__fleche dossier__fleche--suivante" type="button" aria-label="Next image"></button>
+          <button class="bouton bouton--compact dossier__fleche dossier__fleche--suivante" type="button" aria-label="Next image"></button>
         </div>
       </section>
     </div>
   </dialog>
   <dialog class="dossier" id="dossier-dessin" aria-labelledby="dossier-dessin-titre">
     <div class="dossier__cadre">
-      <button class="dossier__fermer" type="button" aria-label="Close the project"></button>
+      <button class="bouton bouton--compact dossier__fermer" type="button" aria-label="Close the project"></button>
       <div class="dossier__texte">
         <p class="dossier__type">Illustration · paper, tablet</p>
         <h2 class="dossier__titre" id="dossier-dessin-titre">Drawing</h2>
@@ -449,21 +477,21 @@
           <figcaption class="dossier__legende"></figcaption>
         </figure>
         <div class="dossier__navigation">
-          <button class="dossier__fleche dossier__fleche--precedente" type="button" aria-label="Previous image"></button>
+          <button class="bouton bouton--compact dossier__fleche dossier__fleche--precedente" type="button" aria-label="Previous image"></button>
           <ul class="dossier__miniatures">
             <li><button class="dossier__miniature" type="button" aria-pressed="true" aria-label="Image 1 of 4" data-image="../assets/images/projets/dessin/1.webp"><img src="../assets/images/projets/dessin/1-mini.webp" alt="" width="96" height="54" loading="lazy"></button></li>
             <li><button class="dossier__miniature" type="button" aria-pressed="false" aria-label="Image 2 of 4" data-image="../assets/images/projets/dessin/2.webp"><img src="../assets/images/projets/dessin/2-mini.webp" alt="" width="96" height="54" loading="lazy"></button></li>
             <li><button class="dossier__miniature" type="button" aria-pressed="false" aria-label="Image 3 of 4" data-image="../assets/images/projets/dessin/3.webp"><img src="../assets/images/projets/dessin/3-mini.webp" alt="" width="96" height="54" loading="lazy"></button></li>
             <li><button class="dossier__miniature" type="button" aria-pressed="false" aria-label="Image 4 of 4" data-image="../assets/images/projets/dessin/4.webp"><img src="../assets/images/projets/dessin/4-mini.webp" alt="" width="96" height="54" loading="lazy"></button></li>
           </ul>
-          <button class="dossier__fleche dossier__fleche--suivante" type="button" aria-label="Next image"></button>
+          <button class="bouton bouton--compact dossier__fleche dossier__fleche--suivante" type="button" aria-label="Next image"></button>
         </div>
       </section>
     </div>
   </dialog>
   <dialog class="dossier" id="dossier-jeu" aria-labelledby="dossier-jeu-titre">
     <div class="dossier__cadre">
-      <button class="dossier__fermer" type="button" aria-label="Close the project"></button>
+      <button class="bouton bouton--compact dossier__fermer" type="button" aria-label="Close the project"></button>
       <div class="dossier__texte">
         <p class="dossier__type">Video game · Unity</p>
         <h2 class="dossier__titre" id="dossier-jeu-titre">Video game</h2>
@@ -480,20 +508,20 @@
           <figcaption class="dossier__legende"></figcaption>
         </figure>
         <div class="dossier__navigation">
-          <button class="dossier__fleche dossier__fleche--precedente" type="button" aria-label="Previous image"></button>
+          <button class="bouton bouton--compact dossier__fleche dossier__fleche--precedente" type="button" aria-label="Previous image"></button>
           <ul class="dossier__miniatures">
             <li><button class="dossier__miniature" type="button" aria-pressed="true" aria-label="Image 1 of 3" data-image="../assets/images/projets/jeu/1.webp"><img src="../assets/images/projets/jeu/1-mini.webp" alt="" width="96" height="54" loading="lazy"></button></li>
             <li><button class="dossier__miniature" type="button" aria-pressed="false" aria-label="Image 2 of 3" data-image="../assets/images/projets/jeu/2.webp"><img src="../assets/images/projets/jeu/2-mini.webp" alt="" width="96" height="54" loading="lazy"></button></li>
             <li><button class="dossier__miniature dossier__miniature--video" type="button" aria-pressed="false" aria-label="Gameplay video" data-video="../assets/images/projets/jeu/extrait.mp4"><img src="../assets/images/projets/jeu/extrait-mini.webp" alt="" width="96" height="54" loading="lazy"></button></li>
           </ul>
-          <button class="dossier__fleche dossier__fleche--suivante" type="button" aria-label="Next image"></button>
+          <button class="bouton bouton--compact dossier__fleche dossier__fleche--suivante" type="button" aria-label="Next image"></button>
         </div>
       </section>
     </div>
   </dialog>
   <dialog class="dossier" id="dossier-portfolio" aria-labelledby="dossier-portfolio-titre">
     <div class="dossier__cadre">
-      <button class="dossier__fermer" type="button" aria-label="Close the project"></button>
+      <button class="bouton bouton--compact dossier__fermer" type="button" aria-label="Close the project"></button>
       <div class="dossier__texte">
         <p class="dossier__type">Web · art direction, AI</p>
         <h2 class="dossier__titre" id="dossier-portfolio-titre">This portfolio</h2>
@@ -510,14 +538,14 @@
           <figcaption class="dossier__legende"></figcaption>
         </figure>
         <div class="dossier__navigation">
-          <button class="dossier__fleche dossier__fleche--precedente" type="button" aria-label="Previous image"></button>
+          <button class="bouton bouton--compact dossier__fleche dossier__fleche--precedente" type="button" aria-label="Previous image"></button>
           <ul class="dossier__miniatures">
             <li><button class="dossier__miniature" type="button" aria-pressed="true" aria-label="Image 1 of 4" data-image="../assets/images/projets/portfolio/1.webp"><img src="../assets/images/projets/portfolio/1-mini.webp" alt="" width="96" height="54" loading="lazy"></button></li>
             <li><button class="dossier__miniature" type="button" aria-pressed="false" aria-label="Image 2 of 4" data-image="../assets/images/projets/portfolio/2.webp"><img src="../assets/images/projets/portfolio/2-mini.webp" alt="" width="96" height="54" loading="lazy"></button></li>
             <li><button class="dossier__miniature" type="button" aria-pressed="false" aria-label="Image 3 of 4" data-image="../assets/images/projets/portfolio/3.webp"><img src="../assets/images/projets/portfolio/3-mini.webp" alt="" width="96" height="54" loading="lazy"></button></li>
             <li><button class="dossier__miniature" type="button" aria-pressed="false" aria-label="Image 4 of 4" data-image="../assets/images/projets/portfolio/4.webp"><img src="../assets/images/projets/portfolio/4-mini.webp" alt="" width="96" height="54" loading="lazy"></button></li>
           </ul>
-          <button class="dossier__fleche dossier__fleche--suivante" type="button" aria-label="Next image"></button>
+          <button class="bouton bouton--compact dossier__fleche dossier__fleche--suivante" type="button" aria-label="Next image"></button>
         </div>
       </section>
     </div>
