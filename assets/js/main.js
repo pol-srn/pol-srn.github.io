@@ -2088,13 +2088,31 @@ function activerPassage(ordinateur) {
       tenter(evenement.deltaY > 0, evenement);
     }
   };
+  // geste commencé dans une bande qui défile à l'horizontale (parchemins des Projets) : s'il part
+  // surtout de côté, il appartient à la bande et ne doit ni être bloqué ni lancer de transition
+  let departBande = null;
   const surDebutTactile = (evenement) => {
-    departTactile = evenement.touches[0].clientY;
+    const toucher = evenement.touches[0];
+    departTactile = toucher.clientY;
+    departBande = evenement.target.closest?.(SELECTEURS.rangee) ? { x: toucher.clientX, y: toucher.clientY } : null;
     noterDepart();
   };
   const surMouvementTactile = (evenement) => {
     if (departTactile === null) {
       return;
+    }
+    if (departBande) {
+      const toucher = evenement.touches[0];
+      const dx = Math.abs(toucher.clientX - departBande.x);
+      const dy = Math.abs(toucher.clientY - departBande.y);
+      if (dx === dy) {
+        return;
+      }
+      departBande = null;
+      if (dx > dy) {
+        departTactile = null;
+        return;
+      }
     }
     const ecart = departTactile - evenement.touches[0].clientY;
     if (bloque() || concerne(ecart > 0)) {
