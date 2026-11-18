@@ -2521,8 +2521,10 @@ img {
     text-align: center;
   }
 
+  /* au doigt, la photo s'incline en suivant le doigt comme sous la souris : elle garde le geste pour elle */
   .apropos__carte {
     margin-inline: auto;
+    touch-action: none;
   }
 
   .equipement__detail {
@@ -2584,6 +2586,9 @@ img {
     overscroll-behavior-x: contain;
     scroll-snap-type: x mandatory;
     scrollbar-width: none;
+    /* la bande ne défile qu'à l'horizontale : le navigateur lui donne tout de suite les glissements de
+       côté ; les glissements verticaux restent aux transitions (voir activerPassage) */
+    touch-action: pan-x;
   }
 
   .projets__rangee::-webkit-scrollbar {

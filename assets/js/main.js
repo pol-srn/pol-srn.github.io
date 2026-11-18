@@ -269,10 +269,7 @@ const ONGLETS = {
     perspective: 800,
     suivi: 0.4,
     secousse: { force: 0.25, maximum: 5 },
-    retour: { duree: 1.2, courbe: "elastic.out(1, 0.35)" },
-    // au doigt : inclinaison selon la place de la carte dans l'écran (degrés), balayage horizontal du
-    // reflet, reflet plus discret près des bords de l'écran, durée de l'inclinaison vers le doigt (s)
-    defilement: { inclinaison: 10, balayage: 0.8, attenuation: 1.2, dureeAppui: 0.25 }
+    retour: { duree: 1.2, courbe: "elastic.out(1, 0.35)" }
   },
   touches: { precedent: ["ArrowUp", "ArrowLeft"], suivant: ["ArrowDown", "ArrowRight"], premier: ["Home"], dernier: ["End"] }
 };
@@ -2093,7 +2090,8 @@ function activerPassage(ordinateur) {
   let departBande = null;
   const surDebutTactile = (evenement) => {
     const toucher = evenement.touches[0];
-    departTactile = toucher.clientY;
+    // (téléphone : un geste posé sur la photo de l'À propos la fait s'incliner, il ne change pas de section)
+    departTactile = !ordinateur && evenement.target.closest?.(SELECTEURS.cartePortrait) ? null : toucher.clientY;
     departBande = evenement.target.closest?.(SELECTEURS.rangee) ? { x: toucher.clientX, y: toucher.clientY } : null;
     noterDepart();
   };
@@ -2359,10 +2357,8 @@ function initialiserCartePortrait() {
     x: gsap.quickTo(reflet, "x", suiviReflet),
     y: gsap.quickTo(reflet, "y", suiviReflet)
   };
-  carte.addEventListener("pointerenter", (evenement) => {
-    if (evenement.pointerType !== "mouse") {
-      return;
-    }
+  // les trois temps du suivi, partagés par la souris (survol, sur ordinateur) et le doigt (appui)
+  const commencer = (evenement) => {
     gsap.killTweensOf(carte);
     gsap.set(carte, { transformPerspective: reglages.perspective });
     suivre = ["rotationX", "rotationY", "x", "y", "scale"].reduce((fonctions, propriete) => ({
@@ -2372,14 +2368,15 @@ function initialiserCartePortrait() {
     const { force, maximum } = reglages.secousse;
     const secousse = gsap.utils.clamp(-maximum, maximum, (evenement.movementX - evenement.movementY) * force);
     gsap.fromTo(carte, { rotationZ: secousse }, { rotationZ: 0, duration: reglages.retour.duree, ease: reglages.retour.courbe });
-  });
-  carte.addEventListener("pointermove", (evenement) => {
+  };
+  const bouger = (evenement) => {
     if (!suivre) {
       return;
     }
     const cadre = carte.getBoundingClientRect();
-    const x = (evenement.clientX - cadre.left) / cadre.width - 0.5;
-    const y = (evenement.clientY - cadre.top) / cadre.height - 0.5;
+    // (au doigt, le pointeur peut sortir de la carte : l'écart reste borné à ses bords)
+    const x = gsap.utils.clamp(-0.5, 0.5, (evenement.clientX - cadre.left) / cadre.width - 0.5);
+    const y = gsap.utils.clamp(-0.5, 0.5, (evenement.clientY - cadre.top) / cadre.height - 0.5);
     suivre.rotationY(x * 2 * reglages.inclinaison);
     suivre.rotationX(-y * 2 * reglages.inclinaison);
     suivre.x(-x * reglages.recul);
@@ -2388,61 +2385,46 @@ function initialiserCartePortrait() {
     suivreReflet.x(x);
     suivreReflet.y(y);
     carte.style.setProperty("--reflet-opacite", 1);
-  });
-  carte.addEventListener("pointerleave", () => {
+  };
+  const relacher = () => {
     if (!suivre) {
       return;
     }
     suivre = null;
     carte.style.setProperty("--reflet-opacite", 0);
     gsap.to(carte, { rotationX: 0, rotationY: 0, x: 0, y: 0, scale: 1, duration: reglages.retour.duree, ease: reglages.retour.courbe, overwrite: "auto", clearProps: "transform" });
+  };
+  carte.addEventListener("pointerenter", (evenement) => {
+    if (evenement.pointerType === "mouse") {
+      commencer(evenement);
+    }
   });
+  carte.addEventListener("pointermove", bouger);
+  carte.addEventListener("pointerleave", relacher);
 
-  // Téléphone et tablette en hauteur (pas de survol, rien ne change sur ordinateur) : comme une carte
-  // holographique qu'on tourne, la carte s'incline un peu et son reflet la balaie pendant qu'on fait
-  // défiler l'À propos ; un appui l'incline vers le doigt, puis elle revient avec le même rebond.
-  const auDoigt = () => !window.matchMedia(MEDIAS.ordinateur).matches;
-  const { defilement } = reglages;
-  let enAttente = false;
-  let appuiEnCours = false;
-  const suivreDefilement = () => {
-    enAttente = false;
-    if (!auDoigt() || appuiEnCours) {
-      return;
-    }
-    const cadre = carte.getBoundingClientRect();
-    // position du milieu de la carte dans l'écran : -0,5 en haut, 0 au milieu, 0,5 en bas
-    const p = gsap.utils.clamp(-0.5, 0.5, (cadre.top + cadre.height / 2) / window.innerHeight - 0.5);
-    gsap.to(carte, { rotationX: p * defilement.inclinaison, transformPerspective: reglages.perspective, duration: reglages.suivi, ease: "power3.out", overwrite: "auto" });
-    suivreReflet.x(-p * defilement.balayage);
-    suivreReflet.y(-p);
-    carte.style.setProperty("--reflet-opacite", (1 - Math.abs(p) * defilement.attenuation).toFixed(2));
-  };
-  const surDefilement = () => {
-    if (!enAttente) {
-      enAttente = true;
-      requestAnimationFrame(suivreDefilement);
-    }
-  };
-  carte.closest(SELECTEURS.zone)?.addEventListener("scroll", surDefilement, { passive: true });
-  window.addEventListener("scroll", surDefilement, { passive: true });
+  // Téléphone et tablette en hauteur : la même physique au doigt ; tant que le doigt est posé sur la
+  // photo, la carte le suit (inclinaison, recul, reflet), puis revient avec le même rebond au lâcher.
+  // La photo ne fait donc pas défiler la page (touch-action: none, CSS) ni ne lance de transition.
   carte.addEventListener("pointerdown", (evenement) => {
-    if (evenement.pointerType === "mouse" || !auDoigt()) {
+    if (evenement.pointerType === "mouse" || window.matchMedia(MEDIAS.ordinateur).matches) {
       return;
     }
-    const cadre = carte.getBoundingClientRect();
-    const x = (evenement.clientX - cadre.left) / cadre.width - 0.5;
-    const y = (evenement.clientY - cadre.top) / cadre.height - 0.5;
-    appuiEnCours = true;
-    gsap.killTweensOf(carte);
-    suivreReflet.x(x);
-    suivreReflet.y(y);
-    carte.style.setProperty("--reflet-opacite", 1);
-    gsap.timeline({ onComplete: () => { appuiEnCours = false; suivreDefilement(); } })
-      .set(carte, { transformPerspective: reglages.perspective })
-      .to(carte, { rotationY: x * 2 * reglages.inclinaison, rotationX: -y * 2 * reglages.inclinaison, scale: reglages.zoom, duration: defilement.dureeAppui, ease: "power2.out" })
-      .to(carte, { rotationX: 0, rotationY: 0, scale: 1, duration: reglages.retour.duree, ease: reglages.retour.courbe });
+    // le doigt garde la carte même s'il en sort (la capture peut échouer : l'effet joue quand même)
+    try {
+      carte.setPointerCapture(evenement.pointerId);
+    } catch {
+      // pointeur déjà relâché
+    }
+    commencer(evenement);
+    bouger(evenement);
   });
+  const relacherAuDoigt = (evenement) => {
+    if (evenement.pointerType !== "mouse") {
+      relacher();
+    }
+  };
+  carte.addEventListener("pointerup", relacherAuDoigt);
+  carte.addEventListener("pointercancel", relacherAuDoigt);
 }
 
 function initialiserOnglets() {
@@ -2496,7 +2478,9 @@ function initialiserOnglets() {
   let depart = null;
   zone.addEventListener("touchstart", (evenement) => {
     const toucher = evenement.touches[0];
-    depart = evenement.touches.length === 1 && evenement.target.closest(SELECTEURS.glisseClasses) ? { x: toucher.clientX, y: toucher.clientY } : null;
+    // (pas sur la photo : au doigt, elle s'incline en suivant le doigt, voir initialiserCartePortrait)
+    const surFiche = evenement.target.closest(SELECTEURS.glisseClasses) && !evenement.target.closest(SELECTEURS.cartePortrait);
+    depart = evenement.touches.length === 1 && surFiche ? { x: toucher.clientX, y: toucher.clientY } : null;
   }, { passive: true });
   zone.addEventListener("touchend", (evenement) => {
     if (!depart) {
