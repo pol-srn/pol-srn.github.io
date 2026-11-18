@@ -72,7 +72,10 @@ const NAVIGATION = {
   debutZone: "top 55%",
   dureeApparitionAnnonce: 0.35,
   pauseAnnonce: 0.25,
-  dureeGlissement: 0.7
+  dureeGlissement: 0.7,
+  // écran tactile : bandeau bref en haut de l'écran (s), et contenu qui apparaît bloc par bloc en entrant
+  bandeau: { entree: 0.35, tenue: 1.1, sortie: 0.4 },
+  debutBloc: "top 92%"
 };
 
 const APPARITION = {
@@ -137,7 +140,9 @@ const TRANSITION = {
   dureeVoile: 0.3,
   dureeVoileDecor: 0.8,
   touchesBas: ["ArrowDown", "PageDown", " "],
-  touchesHaut: ["ArrowUp", "PageUp", "Home"]
+  touchesHaut: ["ArrowUp", "PageUp", "Home"],
+  // molette : au-delà de cette pause entre deux événements (ms), c'est un nouveau geste
+  pauseMolette: 250
 };
 
 const PROJETS = {
@@ -145,7 +150,7 @@ const PROJETS = {
   image: { largeur: 2176, hauteur: 933 },
   carte: { x: 603, y: 218, largeur: 649, hauteur: 385 },
   // gauche = (1 - largeurCarte) / 2 : la carte est centrée dans l'écran
-  cadrage: { gauche: 0.25, largeurCarte: 0.5, centreY: 0.53 },
+  cadrage: { gauche: 0.25, largeurCarte: 0.5, centreY: 0.53, zoomPortrait: 1.2, centrePortrait: 0.58 },
   // bougies de la pièce : flammes redessinées et animées par-dessus la peinture (px de l'image :
   // milieu, pied de la flamme, largeur et hauteur), une case = 4 px comme les pixels peints
   bougies: {
@@ -243,6 +248,10 @@ const EVENEMENTS = {
 
 const ONGLETS = {
   dureeFondu: 0.3,
+  // écran tactile : un glissement horizontal d'au moins ce nombre de px sur la fiche ou le portrait
+  // passe à la classe voisine (et seulement s'il est nettement plus horizontal que vertical)
+  seuilGlisse: 50,
+  rapportGlisse: 1.5,
   courbeFondu: "power1.out",
   // changement de skin : le cadre du portrait se retourne comme une carte de sélection de personnage,
   // l'ancien skin s'assombrit en tournant, le nouveau apparaît au dos
@@ -260,7 +269,10 @@ const ONGLETS = {
     perspective: 800,
     suivi: 0.4,
     secousse: { force: 0.25, maximum: 5 },
-    retour: { duree: 1.2, courbe: "elastic.out(1, 0.35)" }
+    retour: { duree: 1.2, courbe: "elastic.out(1, 0.35)" },
+    // au doigt : inclinaison selon la place de la carte dans l'écran (degrés), balayage horizontal du
+    // reflet, reflet plus discret près des bords de l'écran, durée de l'inclinaison vers le doigt (s)
+    defilement: { inclinaison: 10, balayage: 0.8, attenuation: 1.2, dureeAppui: 0.25 }
   },
   touches: { precedent: ["ArrowUp", "ArrowLeft"], suivant: ["ArrowDown", "ArrowRight"], premier: ["Home"], dernier: ["End"] }
 };
@@ -294,6 +306,8 @@ const SELECTEURS = {
   affiche: ".affiche",
   afficheDeroule: ".affiche__deroule",
   categories: ".projets__onglets",
+  rangee: ".projets__rangee",
+  glisseClasses: ".apropos__panneau, .apropos__identite",
   categorie: ".projets__categorie",
   categoriePrecedente: ".projets__fleche--precedente",
   categorieSuivante: ".projets__fleche--suivante",
@@ -365,11 +379,17 @@ const CLASSES = {
   filante: "hero__filante",
   heroPassage: "hero--passage",
   decorCadre: "projets__decor--cadre",
-  dossierOuvert: "dossier-ouvert"
+  dossierOuvert: "dossier-ouvert",
+  annonceBandeau: "annonce--bandeau",
+  classesOuvert: "classes--ouvert",
+  defilementPilote: "defilement-pilote",
+  point: "projets__point",
+  pointActif: "projets__point--actif"
 };
 
 const MEDIAS = {
-  ordinateur: "(min-width: 48rem)",
+  // grand écran, ou tablette tenue en largeur ; une tablette en hauteur suit la mise en page du téléphone
+  ordinateur: "(min-width: 64rem), (min-width: 48rem) and (orientation: landscape)",
   ajustement: "(min-width: 64rem)",
   mouvement: "(prefers-reduced-motion: no-preference)"
 };
@@ -933,9 +953,12 @@ function preparerCamera(ressources, apropos) {
     const style = getComputedStyle(etoile);
     return { ...versGrille(etoile), couleur: style.backgroundColor, opacite: parseFloat(style.opacity) };
   });
-  const echelle = Math.max(apropos.clientWidth / ressources.largeurA, apropos.clientHeight / ressources.hauteurA);
+  // le décor de l'À propos : la section entière, ou l'écran quand il reste fixe (section plus haute que l'écran)
+  const decorApropos = apropos.querySelector(SELECTEURS.decorApropos);
+  const decor = getComputedStyle(decorApropos).position === "fixed" ? decorApropos : apropos;
+  const echelle = Math.max(decor.clientWidth / ressources.largeurA, decor.clientHeight / ressources.hauteurA);
   const final = {
-    x: ((apropos.clientWidth - ressources.largeurA * echelle) / 2 - scene.left) / pas,
+    x: ((decor.clientWidth - ressources.largeurA * echelle) / 2 - scene.left) / pas,
     y: -scene.top / pas,
     largeur: ressources.largeurA * echelle / pas
   };
@@ -1024,6 +1047,10 @@ function dessinerCamera(camera, avancee) {
 
 function entrerDansCamera(ressources, apropos, avancee) {
   derivesBrume.forEach((derive) => derive.pause());
+  // la page est tout en haut : la parallaxe de l'Accueil doit être au repos quand la caméra mesure les
+  // calques ; restée sur sa valeur de fin (retour depuis une autre section), elle décalait la montagne
+  // sous l'image d'arrivée et le château se dédoublait pendant le zoom
+  gsap.set(Object.keys(DECOR.parallaxe).join(", "), { yPercent: 0 });
   const camera = preparerCamera(ressources, apropos);
   dessinerCamera(camera, avancee);
   hero.classList.add(CLASSES.heroPassage);
@@ -1100,6 +1127,8 @@ function descendre(ressources, apropos, decor) {
       if (dejaVue || continuer) {
         gsap.set(SELECTEURS.ajustable, { autoAlpha: 0 });
       }
+      // (téléphone : la section défile en elle-même ; on y entre par le haut)
+      apropos.scrollTop = 0;
       allerA(apropos);
       sortirDeCamera(camera);
       if (!continuer) {
@@ -1139,8 +1168,18 @@ function remonter(ressources, apropos, decor) {
 // ---------- Projets : la pièce du château, la carte des quêtes au mur ----------
 
 // Cadrage de la pièce : la carte, centrée, occupe la moitié de la largeur ; l'image couvre tout l'écran.
+// En hauteur (téléphone, tablette tenue droite) : la pièce est un peu agrandie, la carte centrée en largeur
+// et calée en hauteur derrière la bande des parchemins (centreCartePortrait, mesuré dans placerPiece).
+let centreCartePortrait = PROJETS.cadrage.centrePortrait;
+
 function cadragePiece(largeur, hauteur) {
   const { image, carte, cadrage } = PROJETS;
+  if (!window.matchMedia(MEDIAS.ordinateur).matches) {
+    const k = Math.max(largeur / image.largeur, hauteur / image.hauteur) * cadrage.zoomPortrait;
+    const x = gsap.utils.clamp(largeur - image.largeur * k, 0, largeur / 2 - (carte.x + carte.largeur / 2) * k);
+    const y = gsap.utils.clamp(hauteur - image.hauteur * k, 0, hauteur * centreCartePortrait - (carte.y + carte.hauteur / 2) * k);
+    return { x, y, k };
+  }
   const k = Math.max(largeur * cadrage.largeurCarte / carte.largeur, largeur / image.largeur, hauteur / image.hauteur);
   const x = gsap.utils.clamp(largeur - image.largeur * k, 0, largeur * cadrage.gauche - carte.x * k);
   const y = gsap.utils.clamp(hauteur - image.hauteur * k, 0, hauteur * cadrage.centreY - (carte.y + carte.hauteur / 2) * k);
@@ -1153,6 +1192,12 @@ function placerPiece() {
     return;
   }
   const { image, carte } = PROJETS;
+  // en hauteur, la carte se cale derrière la bande des parchemins (milieu de la bande, en part de la section)
+  const rangee = zone.querySelector(SELECTEURS.rangee);
+  if (rangee && rangee.offsetHeight && zone.clientHeight) {
+    const bande = rangee.getBoundingClientRect();
+    centreCartePortrait = (bande.top + bande.height / 2 - zone.getBoundingClientRect().top) / zone.clientHeight;
+  }
   const { x, y, k } = cadragePiece(zone.clientWidth, zone.clientHeight);
   const decor = zone.querySelector(SELECTEURS.decorProjets);
   decor.classList.add(CLASSES.decorCadre);
@@ -1283,7 +1328,44 @@ function initialiserQuetes() {
   });
   mesurerAffiches();
   document.fonts?.ready.then(mesurerAffiches);
+  initialiserRangee(carte, affiches);
   initialiserCategories(carte, affiches);
+}
+
+// Petit écran : les parchemins forment une bande qu'on fait défiler au doigt ; des losanges
+// sous la bande disent combien il y en a et lequel est à l'écran (rien ne s'affiche sur la carte).
+let actualiserRangee = null;
+
+function initialiserRangee(carte, affiches) {
+  const rangee = carte.querySelector(SELECTEURS.rangee);
+  if (!rangee) {
+    return;
+  }
+  const points = document.createElement("ol");
+  points.className = "projets__points";
+  points.setAttribute("aria-hidden", "true");
+  rangee.after(points);
+  const visibles = () => affiches.filter((affiche) => !affiche.hidden);
+  const suivre = () => {
+    const liste = visibles();
+    const pas = liste.length > 1 ? liste[1].offsetLeft - liste[0].offsetLeft : 1;
+    const index = Math.round(rangee.scrollLeft / pas);
+    // en fin de bande, le dernier parchemin est atteint même s'il ne peut pas venir tout à gauche
+    const auBout = rangee.scrollLeft + rangee.clientWidth >= rangee.scrollWidth - 4;
+    const actif = auBout ? liste.length - 1 : index;
+    [...points.children].forEach((point, i) => point.classList.toggle(CLASSES.pointActif, i === actif));
+  };
+  actualiserRangee = () => {
+    rangee.scrollLeft = 0;
+    points.replaceChildren(...visibles().map(() => {
+      const point = document.createElement("li");
+      point.className = CLASSES.point;
+      return point;
+    }));
+    suivre();
+  };
+  rangee.addEventListener("scroll", suivre, { passive: true });
+  actualiserRangee();
 }
 
 // Plaque « Projets IUT / Projets perso » : les flèches passent d'une catégorie à l'autre ; les
@@ -1306,6 +1388,7 @@ function initialiserCategories(carte, affiches) {
     const basculer = () => {
       affiches.forEach((affiche) => { affiche.hidden = affiche.dataset.groupe !== groupe; });
       mesurerAffiches?.();
+      actualiserRangee?.();
     };
     animation?.progress(1);
     if (!mouvementAutorise) {
@@ -1621,7 +1704,7 @@ function dessinerPassage(scene, ressources, avancee) {
   contexte.fillStyle = passage.fond;
   contexte.fillRect(0, 0, largeur, hauteur);
   // la forêt à l'aube derrière la vitre transparente de la grande fenêtre (même cadrage que le fond de la section)
-  dessinerCouverture(contexte, ressources.foret, largeur, hauteur);
+  dessinerCouverture(contexte, ressources.foret, largeur, hauteur, 1, cadrageForet());
   contexte.drawImage(piece, coin.x, coin.y, taille.largeur, taille.hauteur);
   // les bougies de la pièce brûlent déjà pendant qu'on passe la fenêtre
   const bougies = ressources.bougies;
@@ -1755,15 +1838,33 @@ function courbeEnchainee(lancee, poursuit, normale) {
 // ---------- Transition Projets <-> Contact : par la fenêtre de la pièce, jusqu'à la vue de la forêt ----------
 
 async function preparerRessourcesContact(decorProjets, decorContact) {
-  const adresse = (element) => getComputedStyle(element).backgroundImage.match(/url\("?(.*?)"?\)/)[1];
-  const [piece, foret] = await Promise.all([adresse(decorProjets), adresse(decorContact)].map(chargerImage));
+  // la forêt est peinte par le pseudo-élément du décor (voir .contact__decor::before)
+  const adresse = (element, pseudo = null) => getComputedStyle(element, pseudo).backgroundImage.match(/url\("?(.*?)"?\)/)[1];
+  const [piece, foret] = await Promise.all([adresse(decorProjets), adresse(decorContact, "::before")].map(chargerImage));
   return { piece, foret };
 }
 
-// Dessine une image qui couvre toute la scène, centrée (comme un fond CSS « cover »), éventuellement agrandie.
-function dessinerCouverture(contexte, image, largeur, hauteur, agrandissement = 1) {
-  const k = Math.max(largeur / image.width, hauteur / image.height) * agrandissement;
-  contexte.drawImage(image, (largeur - image.width * k) / 2, (hauteur - image.height * k) / 2, image.width * k, image.height * k);
+// Cadrage de la forêt, lu dans le CSS (--foret-x, --foret-y, --foret-zoom) : les transitions finissent
+// exactement sur le fond de la section, sur ordinateur (centré) comme en hauteur (ruine au milieu).
+function cadrageForet() {
+  const style = getComputedStyle(document.documentElement);
+  // (0 est une valeur valable : seul un réglage absent prend la valeur par défaut)
+  const lire = (nom, defaut) => {
+    const valeur = parseFloat(style.getPropertyValue(nom));
+    return Number.isNaN(valeur) ? defaut : valeur;
+  };
+  return { x: lire("--foret-x", 0.5), y: lire("--foret-y", 0.5), zoom: lire("--foret-zoom", 1) };
+}
+
+// Dessine une image qui couvre toute la scène (comme un fond CSS « cover »), agrandie de cadrage.zoom puis de
+// agrandissement, et placée selon cadrage.x et cadrage.y (0 à 1, comme un background-position en %).
+function dessinerCouverture(contexte, image, largeur, hauteur, agrandissement = 1, cadrage = { x: 0.5, y: 0.5, zoom: 1 }) {
+  const k = Math.max(largeur / image.width, hauteur / image.height) * cadrage.zoom;
+  // l'agrandissement (recul de la caméra) se fait autour du point de cadrage
+  const repere = { x: (largeur - image.width * k) * cadrage.x, y: (hauteur - image.height * k) * cadrage.y };
+  const centre = { x: repere.x + image.width * k / 2, y: repere.y + image.height * k / 2 };
+  const kFinal = k * agrandissement;
+  contexte.drawImage(image, centre.x - image.width * kFinal / 2, centre.y - image.height * kFinal / 2, image.width * kFinal, image.height * kFinal);
 }
 
 // avancee 0 : la pièce au cadrage de la section Projets ; avancee 1 : la forêt au cadrage du Contact.
@@ -1772,7 +1873,8 @@ function dessinerVersContact(scene, ressources, avancee) {
   const { vitre, approche, reculForet, fond, largeurVitreFinale, passageVitre } = CONTACT;
   const { piece, foret } = ressources;
   // la forêt est lointaine : vue par la vitre, elle garde la même échelle pendant que la fenêtre grandit
-  const dessinerForet = (recul) => dessinerCouverture(contexte, foret, largeur, hauteur, recul);
+  const cadrage = cadrageForet();
+  const dessinerForet = (recul) => dessinerCouverture(contexte, foret, largeur, hauteur, recul, cadrage);
   contexte.imageSmoothingEnabled = false;
   contexte.globalAlpha = 1;
   contexte.fillStyle = fond;
@@ -1884,7 +1986,7 @@ function remonterProjets(ressources, projets, contact) {
     });
 }
 
-function activerPassage() {
+function activerPassage(ordinateur) {
   const apropos = document.querySelector(SELECTEURS.zoneApropos);
   const projets = document.querySelector(SELECTEURS.zoneProjets);
   const decor = apropos.querySelector(SELECTEURS.decorApropos);
@@ -1899,11 +2001,25 @@ function activerPassage() {
   }
   const enHaut = (zone) => Math.abs(window.scrollY - zone.offsetTop) < 8;
   const tientDansEcran = (zone) => zone.offsetHeight <= window.innerHeight + 4;
+  // Téléphone et tablette en hauteur (page pilotée, voir .defilement-pilote) : l'À propos défile à
+  // l'intérieur de la section ; le passage vers la section voisine ne part que du bord atteint, et
+  // seulement par un geste commencé à ce bord (l'élan qui y amène s'arrête net). Un clic du menu passe
+  // toujours. Sur ordinateur, les conditions d'origine restent inchangées.
+  const dedansEnHaut = () => apropos.scrollTop <= 2;
+  const dedansEnBas = () => apropos.scrollTop + apropos.clientHeight >= apropos.scrollHeight - 2;
+  const departAuBord = { haut: true, bas: true, menu: false };
+  const noterDepart = () => {
+    departAuBord.haut = dedansEnHaut();
+    departAuBord.bas = dedansEnBas();
+    departAuBord.menu = false;
+  };
+  const versLeHaut = () => ordinateur || departAuBord.menu || (dedansEnHaut() && departAuBord.haut);
+  const versLeBas = () => (ordinateur ? tientDansEcran(apropos) : departAuBord.menu || (dedansEnBas() && departAuBord.bas));
   // les quatre passages : d'où on part, dans quel sens, vers quelle section
   const passages = [
     { versLeBas: true, vers: apropos, depuis: () => window.scrollY < hero.offsetTop + 8, pret: () => ressources, lancer: () => descendre(ressources, apropos, decor) },
-    { versLeBas: false, vers: hero, depuis: () => enHaut(apropos), pret: () => ressources, lancer: () => remonter(ressources, apropos, decor) },
-    { versLeBas: true, vers: projets, depuis: () => enHaut(apropos) && tientDansEcran(apropos), pret: () => ressourcesProjets, lancer: () => descendreProjets(ressourcesProjets, apropos, projets) },
+    { versLeBas: false, vers: hero, depuis: () => enHaut(apropos) && versLeHaut(), pret: () => ressources, lancer: () => remonter(ressources, apropos, decor) },
+    { versLeBas: true, vers: projets, depuis: () => enHaut(apropos) && versLeBas(), pret: () => ressourcesProjets, lancer: () => descendreProjets(ressourcesProjets, apropos, projets) },
     { versLeBas: false, vers: apropos, depuis: () => enHaut(projets), pret: () => ressourcesProjets, lancer: () => remonterApropos(ressourcesProjets, apropos, projets) },
     { versLeBas: true, vers: contact, depuis: () => enHaut(projets), pret: () => ressourcesContact, lancer: () => descendreContact(ressourcesContact, projets, contact) },
     { versLeBas: false, vers: projets, depuis: () => enHaut(contact), pret: () => ressourcesContact, lancer: () => remonterProjets(ressourcesContact, projets, contact) }
@@ -1959,13 +2075,22 @@ function activerPassage() {
   };
   const tenter = (versLeBas, evenement) => lancer(trouver((passage) => passage.versLeBas === versLeBas), evenement);
   const concerne = (versLeBas) => Boolean(trouver((passage) => passage.versLeBas === versLeBas));
+  // molette ou pavé tactile : un geste est une suite d'événements sans pause ; l'inertie qui amène au bord
+  // ne compte donc pas comme un nouveau geste (il faut lâcher, puis défiler à nouveau)
+  let derniereMolette = 0;
   const surMolette = (evenement) => {
     if (evenement.deltaY !== 0) {
+      const maintenant = performance.now();
+      if (maintenant - derniereMolette > TRANSITION.pauseMolette) {
+        noterDepart();
+      }
+      derniereMolette = maintenant;
       tenter(evenement.deltaY > 0, evenement);
     }
   };
   const surDebutTactile = (evenement) => {
     departTactile = evenement.touches[0].clientY;
+    noterDepart();
   };
   const surMouvementTactile = (evenement) => {
     if (departTactile === null) {
@@ -1988,6 +2113,7 @@ function activerPassage() {
     if (cible.closest(SELECTEURS.tablist) || (evenement.key === " " && cible.closest("button, a"))) {
       return;
     }
+    noterDepart();
     if (TRANSITION.touchesBas.includes(evenement.key)) {
       tenter(true, evenement);
     } else if (TRANSITION.touchesHaut.includes(evenement.key)) {
@@ -1998,6 +2124,8 @@ function activerPassage() {
     const lien = evenement.target.closest(SELECTEURS.lienSection);
     const cible = lien && lien.getAttribute("href").length > 1 ? document.querySelector(lien.getAttribute("href")) : null;
     if (cible) {
+      // un clic du menu passe d'une section à l'autre où que l'on soit dans l'À propos
+      departAuBord.menu = true;
       lancer(etapeVers(cible), evenement, cible);
     }
   };
@@ -2070,7 +2198,62 @@ function cloreAnnonce() {
   gsap.set(annonceTitre, { x: 0, y: 0, scale: 1 });
 }
 
-function annoncerLesZones() {
+// Écran tactile : le nom de la zone passe dans un bandeau en haut de l'écran sans bloquer la page,
+// et le titre de la section se montre aussitôt.
+function annoncerEnBandeau(zone) {
+  const titreZone = zone.querySelector(SELECTEURS.zoneTitre);
+  const { entree, tenue, sortie } = NAVIGATION.bandeau;
+  animationAnnonce?.kill();
+  annonce.classList.add(CLASSES.annonceBandeau);
+  annonceTitre.textContent = titreZone.textContent;
+  annonceTitre.style.lineHeight = "";
+  annonceTitre.style.letterSpacing = "";
+  gsap.set(titreZone, { opacity: 1 });
+  animationAnnonce = gsap.timeline({ onComplete: () => gsap.set(annonce, { autoAlpha: 0 }) })
+    .set(annonce, { autoAlpha: 1 })
+    .fromTo(SELECTEURS.annonceContenu, { autoAlpha: 0, y: -16 }, { autoAlpha: 1, y: 0, duration: entree, ease: "power3.out" })
+    .fromTo(SELECTEURS.annonceSousTitre, { opacity: 0 }, { opacity: 1, duration: entree }, "<")
+    .to(SELECTEURS.annonceContenu, { autoAlpha: 0, y: -16, duration: sortie, ease: "power2.in" }, `+=${tenue}`);
+}
+
+// Écran tactile : chaque bloc apparaît quand il entre à l'écran (et non toute la section d'un coup,
+// dont la fin serait révélée hors de vue) ; chaque zone s'annonce par un bandeau.
+function annoncerEnBandeaux() {
+  const blocs = [];
+  document.querySelectorAll(SELECTEURS.zone).forEach((zone) => {
+    blocs.push(...zone.querySelectorAll(SELECTEURS.contenuZone));
+    if (zonesDecouvertes.has(zone.id)) {
+      return;
+    }
+    gsap.set(zone.querySelector(SELECTEURS.zoneTitre), { opacity: 0 });
+    ScrollTrigger.create({
+      trigger: zone,
+      start: NAVIGATION.debutZone,
+      once: true,
+      onEnter: () => {
+        zonesDecouvertes.add(zone.id);
+        annoncerEnBandeau(zone);
+      }
+    });
+  });
+  gsap.set(blocs, { autoAlpha: 0, y: APPARITION.decalage });
+  // une section qui défile en elle-même (l'À propos, page pilotée) est le repère de ses propres blocs
+  const defileSeule = (zone) => getComputedStyle(zone).overflowY === "auto";
+  const apparaitre = (lot) => gsap.to(lot, { autoAlpha: 1, y: 0, duration: APPARITION.duree, stagger: APPARITION.ecart, ease: APPARITION.courbe, overwrite: true, clearProps: "transform" });
+  document.querySelectorAll(SELECTEURS.zone).forEach((zone) => {
+    const sesBlocs = blocs.filter((bloc) => zone.contains(bloc));
+    if (sesBlocs.length) {
+      ScrollTrigger.batch(sesBlocs, { scroller: defileSeule(zone) ? zone : window, start: NAVIGATION.debutBloc, once: true, onEnter: apparaitre });
+    }
+  });
+}
+
+function annoncerLesZones(ordinateur) {
+  annonce.classList.remove(CLASSES.annonceBandeau);
+  if (!ordinateur) {
+    annoncerEnBandeaux();
+    return;
+  }
   document.querySelectorAll(SELECTEURS.zone).forEach((zone) => {
     if (!zonesDecouvertes.has(zone.id)) {
       gsap.set(zone.querySelector(SELECTEURS.zoneTitre), { opacity: 0 });
@@ -2196,6 +2379,52 @@ function initialiserCartePortrait() {
     carte.style.setProperty("--reflet-opacite", 0);
     gsap.to(carte, { rotationX: 0, rotationY: 0, x: 0, y: 0, scale: 1, duration: reglages.retour.duree, ease: reglages.retour.courbe, overwrite: "auto", clearProps: "transform" });
   });
+
+  // Téléphone et tablette en hauteur (pas de survol, rien ne change sur ordinateur) : comme une carte
+  // holographique qu'on tourne, la carte s'incline un peu et son reflet la balaie pendant qu'on fait
+  // défiler l'À propos ; un appui l'incline vers le doigt, puis elle revient avec le même rebond.
+  const auDoigt = () => !window.matchMedia(MEDIAS.ordinateur).matches;
+  const { defilement } = reglages;
+  let enAttente = false;
+  let appuiEnCours = false;
+  const suivreDefilement = () => {
+    enAttente = false;
+    if (!auDoigt() || appuiEnCours) {
+      return;
+    }
+    const cadre = carte.getBoundingClientRect();
+    // position du milieu de la carte dans l'écran : -0,5 en haut, 0 au milieu, 0,5 en bas
+    const p = gsap.utils.clamp(-0.5, 0.5, (cadre.top + cadre.height / 2) / window.innerHeight - 0.5);
+    gsap.to(carte, { rotationX: p * defilement.inclinaison, transformPerspective: reglages.perspective, duration: reglages.suivi, ease: "power3.out", overwrite: "auto" });
+    suivreReflet.x(-p * defilement.balayage);
+    suivreReflet.y(-p);
+    carte.style.setProperty("--reflet-opacite", (1 - Math.abs(p) * defilement.attenuation).toFixed(2));
+  };
+  const surDefilement = () => {
+    if (!enAttente) {
+      enAttente = true;
+      requestAnimationFrame(suivreDefilement);
+    }
+  };
+  carte.closest(SELECTEURS.zone)?.addEventListener("scroll", surDefilement, { passive: true });
+  window.addEventListener("scroll", surDefilement, { passive: true });
+  carte.addEventListener("pointerdown", (evenement) => {
+    if (evenement.pointerType === "mouse" || !auDoigt()) {
+      return;
+    }
+    const cadre = carte.getBoundingClientRect();
+    const x = (evenement.clientX - cadre.left) / cadre.width - 0.5;
+    const y = (evenement.clientY - cadre.top) / cadre.height - 0.5;
+    appuiEnCours = true;
+    gsap.killTweensOf(carte);
+    suivreReflet.x(x);
+    suivreReflet.y(y);
+    carte.style.setProperty("--reflet-opacite", 1);
+    gsap.timeline({ onComplete: () => { appuiEnCours = false; suivreDefilement(); } })
+      .set(carte, { transformPerspective: reglages.perspective })
+      .to(carte, { rotationY: x * 2 * reglages.inclinaison, rotationX: -y * 2 * reglages.inclinaison, scale: reglages.zoom, duration: defilement.dureeAppui, ease: "power2.out" })
+      .to(carte, { rotationX: 0, rotationY: 0, scale: 1, duration: reglages.retour.duree, ease: reglages.retour.courbe });
+  });
 }
 
 function initialiserOnglets() {
@@ -2205,14 +2434,30 @@ function initialiserOnglets() {
   }
   const boutons = [...liste.querySelectorAll(SELECTEURS.onglet)];
   const portrait = document.querySelector(SELECTEURS.portrait);
+  // téléphone et tablette en hauteur : la liste est un menu déroulant (CSS) ; un appui sur la classe
+  // choisie l'ouvre ou le ferme, choisir une autre classe le referme. Sur ordinateur, rien ne change.
+  const enMenu = () => !window.matchMedia(MEDIAS.ordinateur).matches;
+  const ouvrirMenu = (ouvert) => {
+    liste.classList.toggle(CLASSES.classesOuvert, ouvert);
+    boutons.forEach((bouton) => bouton.toggleAttribute("aria-expanded", false));
+    if (enMenu()) {
+      liste.querySelector('[aria-selected="true"]')?.setAttribute("aria-expanded", ouvert);
+    }
+  };
   boutons.forEach((bouton) => {
     new Image().src = bouton.dataset.portrait;
     bouton.addEventListener("click", () => {
-      if (bouton.getAttribute("aria-selected") !== "true") {
+      const choisie = bouton.getAttribute("aria-selected") === "true";
+      if (!choisie) {
         activerOnglet(boutons, bouton, portrait, false);
+      }
+      if (enMenu()) {
+        ouvrirMenu(choisie && !liste.classList.contains(CLASSES.classesOuvert));
       }
     });
   });
+  ouvrirMenu(false);
+  window.matchMedia(MEDIAS.ordinateur).addEventListener("change", () => ouvrirMenu(false));
   liste.addEventListener("keydown", (evenement) => {
     const courant = boutons.indexOf(document.activeElement);
     const positions = {
@@ -2227,6 +2472,28 @@ function initialiserOnglets() {
     }
     evenement.preventDefault();
     activerOnglet(boutons, boutons[positions[action]], portrait, true);
+  });
+  // écran tactile : glisser vers la gauche sur la fiche ou le portrait montre la classe suivante
+  const zone = liste.closest(SELECTEURS.zoneApropos);
+  let depart = null;
+  zone.addEventListener("touchstart", (evenement) => {
+    const toucher = evenement.touches[0];
+    depart = evenement.touches.length === 1 && evenement.target.closest(SELECTEURS.glisseClasses) ? { x: toucher.clientX, y: toucher.clientY } : null;
+  }, { passive: true });
+  zone.addEventListener("touchend", (evenement) => {
+    if (!depart) {
+      return;
+    }
+    const toucher = evenement.changedTouches[0];
+    const ecartX = toucher.clientX - depart.x;
+    const ecartY = toucher.clientY - depart.y;
+    depart = null;
+    if (Math.abs(ecartX) < ONGLETS.seuilGlisse || Math.abs(ecartX) < Math.abs(ecartY) * ONGLETS.rapportGlisse) {
+      return;
+    }
+    const courant = boutons.findIndex((bouton) => bouton.getAttribute("aria-selected") === "true");
+    const cible = boutons[(courant + (ecartX < 0 ? 1 : -1) + boutons.length) % boutons.length];
+    activerOnglet(boutons, cible, portrait, false);
   });
 }
 
@@ -2774,6 +3041,8 @@ const medias = gsap.matchMedia();
 
 medias.add(MEDIAS, (contexte) => {
   const { ordinateur, mouvement } = contexte.conditions;
+  // téléphone et tablette en hauteur, avec transitions : la page ne défile plus d'elle-même (CSS)
+  document.documentElement.classList.toggle(CLASSES.defilementPilote, !ordinateur && mouvement);
   suivreSections(ordinateur && mouvement);
   if (ordinateur) {
     transformerNavigation(mouvement);
@@ -2784,10 +3053,11 @@ medias.add(MEDIAS, (contexte) => {
   if (mouvement) {
     animerDecor();
     programmerEtoileFilante(DECOR.filante.delaiMin);
-    annoncerLesZones();
-    arreterPassage = activerPassage();
+    annoncerLesZones(ordinateur);
+    arreterPassage = activerPassage(ordinateur);
   }
   return () => {
+    document.documentElement.classList.remove(CLASSES.defilementPilote);
     arreterPassage?.();
     prochaineFilante?.kill();
     chemin.classList.add(CLASSES.cheminDeploye);
